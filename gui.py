@@ -75,42 +75,39 @@ def decode_frame(frame, command, arg_count, args):
     return 0
 
 class SerialThread(threading.Thread):
-    def __init__(self, serial_port, baud_rate, app):
+    def __init__(self, app):
         super().__init__()
-        self.serial_port = serial_port
-        self.baud_rate = baud_rate
         self.stop_event = threading.Event()
         self.app = app
         self.last_command_time = 0
+        self.ser = app.ser
 
     def run(self):
-        try:
-            with serial.Serial(self.serial_port, self.baud_rate, timeout=0.5) as ser:
-                while not self.stop_event.is_set():
-                    if time.time() - self.last_command_time > 0.3:
-                        self.app.change_state(False)
-                    if time.time() - self.last_command_time > 0.1:
-                        # Send command 5 frame every 100 ms
-                        frame = bytearray(9)
-                        command = 0x05
-                        arg_count = 0
-                        args = []
-                        result = code_frame(frame, command, arg_count, args)
-                        if result == 0:
-                            ser.write(frame)
-                            response = ser.readline().strip()
-                            if response:
-                                command_anw = 0
-                                arg_count_anw = 0
-                                args_anw = []
-                                if decode_frame(response,command_anw,arg_count_anw,args_anw):   
-                                    self.app.change_state(True)
-                                    self.last_command_time = time.time()
-        except serial.SerialException:
-            print("Serial port error")
-        finally:
-            self.stop_event.set()
+        while not self.stop_event.is_set():
+            try:
+                if time.time() - self.last_command_time > 0.5:
+                    # Send command 5 frame every 500 ms
+                    frame = bytearray(9)
+                    command = 0x05
+                    arg_count = 0
+                    args = []
+                    result = code_frame(frame, command, arg_count, args)
+                    if result == 0:
+                        self.ser.write(frame)
+                        response = self.ser.readline().strip()
+                        if response:
+                            command_anw = 0
+                            arg_count_anw = 0
+                            args_anw = []
+                            if decode_frame(response,command_anw,arg_count_anw,args_anw):   
+                                self.app.change_state(True, True)
+                                self.last_command_time = time.time()
+            except:
+                return 0
 
+            if time.time() - self.last_command_time > 1:
+                self.app.change_state(False, False)
+        return 0
     def stop(self):
         self.stop_event.set()
 
@@ -123,6 +120,13 @@ class App:
         self.serial_thread = None
         self.blocked_state = False
         self.create_widgets()
+        try:
+            self.ser = serial.Serial('/dev/ttyACM0', 38400, timeout=1)     
+        except serial.SerialException:
+            print("Serial port error")
+        finally:
+            print("Could not connect to target ")
+
 
     def create_widgets(self):
 
@@ -149,41 +153,60 @@ class App:
         if self.connection_status is False:
             self.connection_button.configure(text="Rozłącz")
             if self.serial_thread is None or not self.serial_thread.is_alive():
-                self.serial_thread = SerialThread('/dev/ttyACM0', 38400, self)
+                self.serial_thread = SerialThread(self)
                 self.serial_thread.start()
             self.connection_status = True
         else:
             self.connection_button.configure(text="Połącz")
-            if self.serial_thread:
+            if self.serial_thread and self.serial_thread.is_alive():
                 self.serial_thread.stop()
+                self.serial_thread.join()
             self.connection_status = False
-            self.change_state(False)
+            self.change_state(False, False)
 
-    def change_state(self, newstate):
-        if newstate is True and self.connection_status is True:
+    def change_state(self, diode_state, button_state):
+        if diode_state is True:
+            self.canvas.itemconfig(self.circle, fill="green")
+        else:
+            self.canvas.itemconfig(self.circle, fill="red")
+
+        if button_state is True:
             self.task_switch_button._state = 'normal'
             self.semaphore_button._state = 'normal'
-            self.canvas.itemconfig(self.circle, fill="green")
         else:
             self.task_switch_button._state = 'disabled'
             self.semaphore_button._state = 'disabled'
-            self.canvas.itemconfig(self.circle, fill="red")
+            
 
     def send_command_1(self):
         self.blocked_state = True
-        self.change_state(True)
-        self.serial_thread.last_command_time = time.time()  # Prevent sending command 5
+        self.change_state(True,False)
+        if self.serial_thread and self.serial_thread.is_alive():
+            self.serial_thread.stop()
+            time.sleep(0.01)
+            #self.serial_thread.join()
+        
         frame = bytearray(9)
-        command = 0x01
+        command = 0x00
         arg_count = 0
         args = []
         result = code_frame(frame, command, arg_count, args)
+
         if result == 0:
-            ser.write(frame)
-            response = ser.readline().strip()
+            self.ser.write(frame)
+            response = self.ser.readline().strip()
             if response:
-                print("Received response to command 1")
-        time.sleep(2)  # Wait for 2 seconds without changing state
+                command_anw = 0
+                arg_count_anw = 0
+                args_anw = []
+                if decode_frame(response,command_anw,arg_count_anw,args_anw):  
+                    if command_anw == command and arg_count_anw > 0:
+                        print("Sukces")
+            else:
+                print("error")
+      
+        self.serial_thread = SerialThread(self)
+        self.serial_thread.start()
         self.blocked_state = False
 
     def send_command_2(self):
@@ -191,7 +214,7 @@ class App:
         self.change_state(True)
         self.serial_thread.last_command_time = time.time()  # Prevent sending command 5
         frame = bytearray(9)
-        command = 0x02
+        command = 0x01
         arg_count = 0
         args = []
         result = code_frame(frame, command, arg_count, args)
