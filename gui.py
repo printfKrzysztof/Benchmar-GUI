@@ -107,15 +107,18 @@ class SerialThread(threading.Thread):
                 print("Fail")
                 pass
             
-            mutex.release()
+            
             if time.time() - self.last_command_time > 1:
                 self.app.change_state(False, False)
+            mutex.release()
+            time.sleep(0.01)
 
 
-class App:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Serial Communication App") 
+class App(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+        self.title("RTOS Benchmark")
+        self.geometry(f"{600}x{250}")
         self.connection_status = False
         self.serial_thread = None
         self.blocked_state = False
@@ -137,7 +140,7 @@ class App:
 
     def create_widgets(self):
 
-        self.frame = ctk.CTkFrame(self.root)
+        self.frame = ctk.CTkFrame(self)
         self.frame.pack(padx=20, pady=20)
 
         self.connection_button = ctk.CTkButton(self.frame, text="Połącz", command=self.start_serial)
@@ -321,6 +324,5 @@ class App:
         self.blocked_state = False
 
 if __name__ == "__main__":
-    root = ctk.CTk()
-    app = App(root)
-    root.mainloop()
+    app = App()
+    app.mainloop()
