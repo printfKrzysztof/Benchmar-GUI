@@ -3,9 +3,19 @@ import serial
 import threading
 import time
 import struct
+import argparse
+
+# Add this line at the beginning of your script to parse command-line arguments
+parser = argparse.ArgumentParser(description='Program do benchmarkowania RTOS')
+parser.add_argument('--port', help='Serial port')
+args = parser.parse_args()
+
+# Use the port argument provided from the command line
+serial_port = args.port
 MAX_ARGS = 4
 
-mutex = threading.Lock() #Binary semaphore  
+mutex = threading.Lock() #Binary semaphore 
+ 
 crc16_tab = [
     0x0000, 0xc0c1, 0xc181, 0x0140, 0xc301, 0x03c0, 0x0280, 0xc241,
     0xc601, 0x06c0, 0x0780, 0xc741, 0x0500, 0xc5c1, 0xc481, 0x0440,
@@ -115,7 +125,7 @@ class SerialThread(threading.Thread):
 
 
 class App(ctk.CTk):
-    def __init__(self):
+    def __init__(self, port):
         super().__init__()
         self.title("RTOS Benchmark")
         self.geometry(f"{600}x{250}")
@@ -128,7 +138,7 @@ class App(ctk.CTk):
         mutex.acquire()
         while self.ser is None:
             try:
-                self.ser = serial.Serial('/dev/ttyACM1', 38400, timeout=1)
+                self.ser = serial.Serial(port, 38400, timeout=1)
             except serial.SerialException:
                 print("Serial port error")
                 time.sleep(1)
@@ -324,5 +334,5 @@ class App(ctk.CTk):
         self.blocked_state = False
 
 if __name__ == "__main__":
-    app = App()
+    app = App(serial_port)
     app.mainloop()
