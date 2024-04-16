@@ -2,8 +2,10 @@ import customtkinter as ctk
 import serial
 import threading
 import time
+import struct
 MAX_ARGS = 4
 
+mutex = threading.Lock() #Binary semaphore  
 crc16_tab = [
     0x0000, 0xc0c1, 0xc181, 0x0140, 0xc301, 0x03c0, 0x0280, 0xc241,
     0xc601, 0x06c0, 0x0780, 0xc741, 0x0500, 0xc5c1, 0xc481, 0x0440,
@@ -46,7 +48,6 @@ def crc16(buf):
     return crc
 
 def code_frame(frame, command, arg_count, args):
-    assert arg_count <= MAX_ARGS, "Too many arguments"
     if arg_count > MAX_ARGS:
         return "ERR_FRM_WRONG_COMMAND"
     frame[0] = 0xFF
@@ -55,22 +56,21 @@ def code_frame(frame, command, arg_count, args):
     for i in range(arg_count):
         frame[3 + i] = args[i]
     crc = crc16(frame[:7])
-    frame[7] = (crc >> 8) & 0xFF
-    frame[8] = crc & 0xFF
+    frame[7] = ((crc >> 8) & 0xFF)
+    frame[8] = (crc & 0xFF)
     return 0
 
 def decode_frame(frame, command, arg_count, args):
-    assert frame[2] <= MAX_ARGS, "Too many arguments"
     if frame[2] > MAX_ARGS:
         return "ERR_FRM_WRONG_COMMAND"
     if frame[0] != 0xFF:
         return "ERR_FRM_WRONG_START"
-    command = frame[1] 
-    arg_count = frame[2] 
-    for i in range(arg_count):
+    command[0] = frame[1] 
+    arg_count[0] = frame[2] 
+    for i in range(arg_count[0]):
         args[i] = frame[3 + i]
     crc = crc16(frame[:7])
-    if crc != frame[7] >> 8 | frame[8]:
+    if crc != (frame[7] >> 8 | frame[8]):
         return "ERR_FRM_WRONG_CRC"
     return 0
 
@@ -81,9 +81,9 @@ class SerialThread(threading.Thread):
         self.app = app
         self.last_command_time = 0
         self.ser = app.ser
-
     def run(self):
-        while not self.stop_event.is_set():
+        while True:
+            mutex.acquire()
             try:
                 if time.time() - self.last_command_time > 0.5:
                     # Send command 5 frame every 500 ms
@@ -96,37 +96,44 @@ class SerialThread(threading.Thread):
                         self.ser.write(frame)
                         response = self.ser.readline().strip()
                         if response:
-                            command_anw = 0
-                            arg_count_anw = 0
-                            args_anw = []
+                            command_anw = [0]
+                            arg_count_anw = [0]
+                            args_anw = [0,0,0,0]
                             if decode_frame(response,command_anw,arg_count_anw,args_anw):   
                                 self.app.change_state(True, True)
                                 self.last_command_time = time.time()
+                                print("Odebrano ramkę kontrolną")
             except:
-                return 0
-
+                print("Fail")
+                pass
+            
+            mutex.release()
             if time.time() - self.last_command_time > 1:
                 self.app.change_state(False, False)
-        return 0
-    def stop(self):
-        self.stop_event.set()
 
 
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Serial Communication App")
+        self.root.title("Serial Communication App") 
         self.connection_status = False
         self.serial_thread = None
         self.blocked_state = False
         self.create_widgets()
-        try:
-            self.ser = serial.Serial('/dev/ttyACM0', 38400, timeout=1)     
-        except serial.SerialException:
-            print("Serial port error")
-        finally:
-            print("Could not connect to target ")
+        self.ser = None
+        
+        mutex.acquire()
+        while self.ser is None:
+            try:
+                self.ser = serial.Serial('/dev/ttyACM1', 38400, timeout=1)
+            except serial.SerialException:
+                print("Serial port error")
+                time.sleep(1)
+            else:
+                print("Connected to target")
 
+        self.serial_thread = SerialThread(self)
+        self.serial_thread.start()
 
     def create_widgets(self):
 
@@ -143,26 +150,39 @@ class App:
         # Draw a circle on the canvas
         self.circle = self.canvas.create_oval(10, 10, 30, 30, outline=None, fill="red")
 
-        self.task_switch_button = ctk.CTkButton(self.frame, text="Czas zmiany wątków", command=self.send_command_1)
-        self.task_switch_button.grid(row=2, column=1, pady=5)
+        self.task_switch_button = ctk.CTkButton(self.frame, text="Test wywłaszczania wątków", command=self.send_command_0)
+        self.task_switch_button.grid(row=3, column=1, pady=5)
+        self.task_switch_label = ctk.CTkLabel(self.frame,text="    -----    ")
+        self.task_switch_label.grid(row=3,column = 2, pady=5, padx= 10)
 
-        self.semaphore_button = ctk.CTkButton(self.frame, text="Test semaforów", command=self.send_command_2)
+        self.semaphore_button = ctk.CTkButton(self.frame, text="Test semaforów", command=self.send_command_1)
         self.semaphore_button.grid(row=4, column=1, pady=5)
+        self.semaphore_label = ctk.CTkLabel(self.frame,text="    -----    ")
+        self.semaphore_label.grid(row=4,column = 2, pady=5, padx= 10)
+
+        self.queue_button = ctk.CTkButton(self.frame, text="Test kolejki", command=self.send_command_2)
+        self.queue_button.grid(row=5, column=1, pady=5)
+        self.queue_label = ctk.CTkLabel(self.frame,text="    -----    ")
+        self.queue_label.grid(row=5,column = 2, pady=5, padx= 10)
+
+        self.context_button = ctk.CTkButton(self.frame, text="Test zmiany kontekstu", command=self.send_command_3)
+        self.context_button.grid(row=6, column=1, pady=5)
+        self.context_label = ctk.CTkLabel(self.frame,text="    -----    ")
+        self.context_label.grid(row=6,column = 2, pady=5, padx= 10)
 
     def start_serial(self):
-        if self.connection_status is False:
+        
+        if self.connection_status is False:   
             self.connection_button.configure(text="Rozłącz")
-            if self.serial_thread is None or not self.serial_thread.is_alive():
-                self.serial_thread = SerialThread(self)
-                self.serial_thread.start()
+            mutex.release()
             self.connection_status = True
+            print("Połączono")
         else:
             self.connection_button.configure(text="Połącz")
-            if self.serial_thread and self.serial_thread.is_alive():
-                self.serial_thread.stop()
-                self.serial_thread.join()
+            mutex.acquire()
             self.connection_status = False
             self.change_state(False, False)
+            print("Rozłączono")
 
     def change_state(self, diode_state, button_state):
         if diode_state is True:
@@ -178,13 +198,42 @@ class App:
             self.semaphore_button._state = 'disabled'
             
 
+    def send_command_0(self):
+        self.blocked_state = True
+        self.change_state(True,False)
+        mutex.acquire()
+        
+        frame = bytearray(9)
+        command = 0x00
+        arg_count = 0
+        args = []
+        result = code_frame(frame, command, arg_count, args)
+
+        if result == 0:
+            self.ser.flush()
+            self.ser.write(frame)
+            # time.sleep(3)
+            response = self.ser.readline().strip()
+            if response:
+                command_anw = [0]
+                arg_count_anw = [0]
+                args_anw = [0,0,0,0]
+                if decode_frame(response,command_anw,arg_count_anw,args_anw):  
+                    if command_anw[0] == command and arg_count_anw[0] == 4:
+                        print("Sukces")
+                        bytes_data = bytes(args_anw)
+                        float_value = struct.unpack('<f', bytes_data)[0]
+                        self.task_switch_label.configure(text=str(float_value))
+            else:
+                print("Board didn't respond to command 1. Maybe resend?")
+      
+        mutex.release()
+        self.blocked_state = False
+
     def send_command_1(self):
         self.blocked_state = True
         self.change_state(True,False)
-        if self.serial_thread and self.serial_thread.is_alive():
-            self.serial_thread.stop()
-            time.sleep(0.01)
-            #self.serial_thread.join()
+        mutex.acquire()
         
         frame = bytearray(9)
         command = 0x00
@@ -200,32 +249,76 @@ class App:
                 arg_count_anw = 0
                 args_anw = []
                 if decode_frame(response,command_anw,arg_count_anw,args_anw):  
-                    if command_anw == command and arg_count_anw > 0:
+                    if command_anw == command and arg_count_anw == 4:
                         print("Sukces")
+                        bytes_data = bytes(args_anw)
+                        float_value = struct.unpack('<f', bytes_data)[0]
+                        self.task_switch_label.configure(text=str(float_value))
             else:
                 print("error")
       
-        self.serial_thread = SerialThread(self)
-        self.serial_thread.start()
+        mutex.release()
         self.blocked_state = False
 
     def send_command_2(self):
         self.blocked_state = True
-        self.change_state(True)
-        self.serial_thread.last_command_time = time.time()  # Prevent sending command 5
+        self.change_state(True,False)
+        mutex.acquire()
+        
         frame = bytearray(9)
-        command = 0x01
+        command = 0x00
         arg_count = 0
         args = []
         result = code_frame(frame, command, arg_count, args)
+
         if result == 0:
-            ser.write(frame)
-            response = ser.readline().strip()
+            self.ser.write(frame)
+            response = self.ser.readline().strip()
             if response:
-                print("Received response to command 2")
-        time.sleep(0.5)  # Wait for 500 ms without changing state
+                command_anw = 0
+                arg_count_anw = 0
+                args_anw = []
+                if decode_frame(response,command_anw,arg_count_anw,args_anw):  
+                    if command_anw == command and arg_count_anw == 4:
+                        print("Sukces")
+                        bytes_data = bytes(args_anw)
+                        float_value = struct.unpack('<f', bytes_data)[0]
+                        self.task_switch_label.configure(text=str(float_value))
+            else:
+                print("error")
+      
+        mutex.release()
         self.blocked_state = False
 
+    def send_command_3(self):
+        self.blocked_state = True
+        self.change_state(True,False)
+        mutex.acquire()
+        
+        frame = bytearray(9)
+        command = 0x00
+        arg_count = 0
+        args = []
+        result = code_frame(frame, command, arg_count, args)
+
+        if result == 0:
+            self.ser.write(frame)
+            response = self.ser.readline().strip()
+            if response:
+                command_anw = 0
+                arg_count_anw = 0
+                args_anw = []
+                if decode_frame(response,command_anw,arg_count_anw,args_anw):  
+                    if command_anw == command and arg_count_anw == 4:
+                        print("Sukces")
+                        bytes_data = bytes(args_anw)
+                        float_value = struct.unpack('<f', bytes_data)[0]
+                        self.task_switch_label.configure(text=str(float_value))
+            else:
+                print("error")
+      
+        mutex.release()
+        self.blocked_state = False
 
 if __name__ == "__main__":
     root = ctk.CTk()
