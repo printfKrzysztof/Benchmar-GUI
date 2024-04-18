@@ -238,7 +238,7 @@ class App(ctk.CTk):
                         float_value = struct.unpack('<f', bytes_data)[0]
                         self.task_switch_label.configure(text=str(float_value))
             else:
-                print("Board didn't respond to command 1. Maybe resend?")
+                print("Board didn't respond to command 0. Maybe resend?")
       
         mutex.release()
         self.blocked_state = False
@@ -249,29 +249,32 @@ class App(ctk.CTk):
         mutex.acquire()
         
         frame = bytearray(9)
-        command = 0x00
+        command = 0x01
         arg_count = 0
         args = []
         result = code_frame(frame, command, arg_count, args)
 
         if result == 0:
+            self.ser.flush()
             self.ser.write(frame)
+            # time.sleep(3)
             response = self.ser.readline().strip()
             if response:
-                command_anw = 0
-                arg_count_anw = 0
-                args_anw = []
+                command_anw = [0]
+                arg_count_anw = [0]
+                args_anw = [0,0,0,0]
                 if decode_frame(response,command_anw,arg_count_anw,args_anw):  
-                    if command_anw == command and arg_count_anw == 4:
+                    if command_anw[0] == command and arg_count_anw[0] == 4:
                         print("Sukces")
                         bytes_data = bytes(args_anw)
                         float_value = struct.unpack('<f', bytes_data)[0]
-                        self.task_switch_label.configure(text=str(float_value))
+                        self.semaphore_label.configure(text=str(float_value))
             else:
-                print("error")
+                print("Board didn't respond to command 1. Maybe resend?")
       
         mutex.release()
         self.blocked_state = False
+
 
     def send_command_2(self):
         self.blocked_state = True
@@ -279,26 +282,28 @@ class App(ctk.CTk):
         mutex.acquire()
         
         frame = bytearray(9)
-        command = 0x00
+        command = 0x02
         arg_count = 0
         args = []
         result = code_frame(frame, command, arg_count, args)
 
         if result == 0:
+            self.ser.flush()
             self.ser.write(frame)
+            # time.sleep(3)
             response = self.ser.readline().strip()
             if response:
-                command_anw = 0
-                arg_count_anw = 0
-                args_anw = []
+                command_anw = [0]
+                arg_count_anw = [0]
+                args_anw = [0,0,0,0]
                 if decode_frame(response,command_anw,arg_count_anw,args_anw):  
-                    if command_anw == command and arg_count_anw == 4:
+                    if command_anw[0] == command and arg_count_anw[0] == 4:
                         print("Sukces")
                         bytes_data = bytes(args_anw)
                         float_value = struct.unpack('<f', bytes_data)[0]
-                        self.task_switch_label.configure(text=str(float_value))
+                        self.queue_label.configure(text=str(float_value))
             else:
-                print("error")
+                print("Board didn't respond to command 2. Maybe resend?")
       
         mutex.release()
         self.blocked_state = False
@@ -309,26 +314,28 @@ class App(ctk.CTk):
         mutex.acquire()
         
         frame = bytearray(9)
-        command = 0x00
+        command = 0x03
         arg_count = 0
         args = []
         result = code_frame(frame, command, arg_count, args)
 
         if result == 0:
+            self.ser.flush()
             self.ser.write(frame)
+            # time.sleep(3)
             response = self.ser.readline().strip()
             if response:
-                command_anw = 0
-                arg_count_anw = 0
-                args_anw = []
+                command_anw = [0]
+                arg_count_anw = [0]
+                args_anw = [0,0,0,0]
                 if decode_frame(response,command_anw,arg_count_anw,args_anw):  
-                    if command_anw == command and arg_count_anw == 4:
+                    if command_anw[0] == command and arg_count_anw[0] == 4:
                         print("Sukces")
                         bytes_data = bytes(args_anw)
                         float_value = struct.unpack('<f', bytes_data)[0]
-                        self.task_switch_label.configure(text=str(float_value))
+                        self.context_label.configure(text=str(float_value))
             else:
-                print("error")
+                print("Board didn't respond to command 3. Maybe resend?")
       
         mutex.release()
         self.blocked_state = False
