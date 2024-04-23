@@ -84,58 +84,17 @@ def decode_frame(frame, command, arg_count, args):
         return "ERR_FRM_WRONG_CRC"
     return 0
 
-class SerialThread(threading.Thread):
-    def __init__(self, app):
-        super().__init__()
-        self.stop_event = threading.Event()
-        self.app = app
-        self.last_command_time = 0
-        self.ser = app.ser
-    def run(self):
-        while True:
-            mutex.acquire()
-            try:
-                if time.time() - self.last_command_time > 0.5:
-                    # Send command 5 frame every 500 ms
-                    frame = bytearray(9)
-                    command = 0x05
-                    arg_count = 0
-                    args = []
-                    result = code_frame(frame, command, arg_count, args)
-                    if result == 0:
-                        self.ser.write(frame)
-                        response = self.ser.readline().strip()
-                        if response:
-                            command_anw = [0]
-                            arg_count_anw = [0]
-                            args_anw = [0,0,0,0]
-                            if decode_frame(response,command_anw,arg_count_anw,args_anw):   
-                                self.app.change_state(True, True)
-                                self.last_command_time = time.time()
-                                print("Odebrano ramkę kontrolną")
-            except:
-                print("Fail")
-                pass
-            
-            
-            if time.time() - self.last_command_time > 1:
-                self.app.change_state(False, False)
-            mutex.release()
-            time.sleep(0.01)
-
-
 class App(ctk.CTk):
     def __init__(self, port):
         super().__init__()
         self.title("RTOS Benchmark")
         self.geometry(f"{600}x{250}")
+        self.resizable(False,False)
         self.connection_status = False
-        self.serial_thread = None
         self.blocked_state = False
         self.create_widgets()
         self.ser = None
-        
-        mutex.acquire()
+
         while self.ser is None:
             try:
                 self.ser = serial.Serial(port, 38400, timeout=1)
@@ -145,59 +104,56 @@ class App(ctk.CTk):
             else:
                 print("Connected to target")
 
-        self.serial_thread = SerialThread(self)
-        self.serial_thread.start()
-
     def create_widgets(self):
 
         self.frame = ctk.CTkFrame(self)
         self.frame.pack(padx=20, pady=20)
 
-        self.connection_button = ctk.CTkButton(self.frame, text="Połącz", command=self.start_serial)
-        self.connection_button.grid(row=1, column=1, pady=5)
-
         ctk.CTkLabel(self.frame, text="", width=5).grid(row=1, column=0)
+        
+        self.current_label = ctk.CTkLabel(self.frame,text="Wprowadź parametry")
+        self.current_label.grid(row=1,column = 0, pady=5, padx= 10)
+
+        self.current_label = ctk.CTkLabel(self.frame,text="Wybierz test do przeprowadzenia")
+        self.current_label.grid(row=1,column = 1, pady=5, padx= 10)
+
         self.canvas = ctk.CTkCanvas(self.frame, width=40, height=40, highlightthickness=0, bg=self.frame._fg_color[1])
         self.canvas.grid(row=1, column=2, pady=5)
-
-        # Draw a circle on the canvas
         self.circle = self.canvas.create_oval(10, 10, 30, 30, outline=None, fill="red")
 
-        self.task_switch_button = ctk.CTkButton(self.frame, text="Test wywłaszczania wątków", command=self.send_command_0)
+        button_width = 240  # Adjust the width as needed
+
+        self.task_switch_input = ctk.CTkEntry(self.frame, placeholder_text="L. wątków; L. testów")
+        self.task_switch_input.grid(row=3, column=0, pady=5,padx= 10)
+        self.task_switch_button = ctk.CTkButton(self.frame, text="Test wywłaszczania wątków", command=self.send_command_0, width=button_width)
         self.task_switch_button.grid(row=3, column=1, pady=5)
         self.task_switch_label = ctk.CTkLabel(self.frame,text="    -----    ")
-        self.task_switch_label.grid(row=3,column = 2, pady=5, padx= 10)
+        self.task_switch_label.grid(row=3, column=2, pady=5, padx= 10)
 
-        self.semaphore_button = ctk.CTkButton(self.frame, text="Test semaforów", command=self.send_command_1)
+        self.semaphore_input = ctk.CTkEntry(self.frame)
+        self.semaphore_input.grid(row=4, column=0, pady=5, padx= 10)
+        self.semaphore_button = ctk.CTkButton(self.frame, text="Test semaforów", command=self.send_command_1, width=button_width, fg_color="darkorchid4")
         self.semaphore_button.grid(row=4, column=1, pady=5)
         self.semaphore_label = ctk.CTkLabel(self.frame,text="    -----    ")
-        self.semaphore_label.grid(row=4,column = 2, pady=5, padx= 10)
+        self.semaphore_label.grid(row=4, column=2, pady=5, padx= 10)
 
-        self.queue_button = ctk.CTkButton(self.frame, text="Test kolejki", command=self.send_command_2)
+        self.queue_input = ctk.CTkEntry(self.frame,placeholder_text="L. testów")
+        self.queue_input.grid(row=5, column=0, pady=5, padx= 10)
+        self.queue_button = ctk.CTkButton(self.frame, text="Test kolejki", command=self.send_command_2, width=button_width,  fg_color="darkgreen")
         self.queue_button.grid(row=5, column=1, pady=5)
         self.queue_label = ctk.CTkLabel(self.frame,text="    -----    ")
-        self.queue_label.grid(row=5,column = 2, pady=5, padx= 10)
+        self.queue_label.grid(row=5, column=2, pady=5, padx= 10)
 
-        self.context_button = ctk.CTkButton(self.frame, text="Test zmiany kontekstu", command=self.send_command_3)
+        self.context_input = ctk.CTkEntry(self.frame)
+        self.context_input.grid(row=6, column=0, pady=5, padx= 10)
+        self.context_button = ctk.CTkButton(self.frame, text="Test zmiany kontekstu", command=self.send_command_3, width=button_width,fg_color="brown")
         self.context_button.grid(row=6, column=1, pady=5)
         self.context_label = ctk.CTkLabel(self.frame,text="    -----    ")
-        self.context_label.grid(row=6,column = 2, pady=5, padx= 10)
+        self.context_label.grid(row=6, column=2, pady=5, padx= 10)
 
-    def start_serial(self):
-        
-        if self.connection_status is False:   
-            self.connection_button.configure(text="Rozłącz")
-            mutex.release()
-            self.connection_status = True
-            print("Połączono")
-        else:
-            self.connection_button.configure(text="Połącz")
-            mutex.acquire()
-            self.connection_status = False
-            self.change_state(False, False)
-            print("Rozłączono")
 
     def change_state(self, diode_state, button_state):
+
         if diode_state is True:
             self.canvas.itemconfig(self.circle, fill="green")
         else:
@@ -214,7 +170,7 @@ class App(ctk.CTk):
     def send_command_0(self):
         self.blocked_state = True
         self.change_state(True,False)
-        mutex.acquire()
+        
         
         frame = bytearray(9)
         command = 0x00
@@ -240,13 +196,13 @@ class App(ctk.CTk):
             else:
                 print("Board didn't respond to command 0. Maybe resend?")
       
-        mutex.release()
+        
         self.blocked_state = False
 
     def send_command_1(self):
         self.blocked_state = True
         self.change_state(True,False)
-        mutex.acquire()
+        
         
         frame = bytearray(9)
         command = 0x01
@@ -272,14 +228,14 @@ class App(ctk.CTk):
             else:
                 print("Board didn't respond to command 1. Maybe resend?")
       
-        mutex.release()
+        
         self.blocked_state = False
 
 
     def send_command_2(self):
         self.blocked_state = True
         self.change_state(True,False)
-        mutex.acquire()
+        
         
         frame = bytearray(9)
         command = 0x02
@@ -305,13 +261,13 @@ class App(ctk.CTk):
             else:
                 print("Board didn't respond to command 2. Maybe resend?")
       
-        mutex.release()
+        
         self.blocked_state = False
 
     def send_command_3(self):
         self.blocked_state = True
         self.change_state(True,False)
-        mutex.acquire()
+        
         
         frame = bytearray(9)
         command = 0x03
@@ -337,7 +293,7 @@ class App(ctk.CTk):
             else:
                 print("Board didn't respond to command 3. Maybe resend?")
       
-        mutex.release()
+        
         self.blocked_state = False
 
 if __name__ == "__main__":
