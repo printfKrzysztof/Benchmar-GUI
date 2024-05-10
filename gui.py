@@ -13,6 +13,7 @@ args = parser.parse_args()
 # Use the port argument provided from the command line
 serial_port = args.port
 MAX_ARGS = 4
+MAX_SCORES = 400
 
 mutex = threading.Lock() #Binary semaphore 
  
@@ -57,38 +58,38 @@ def crc16(buf):
         crc = (crc >> 8) ^ crc16_tab[(crc ^ byte) & 0xFF]
     return crc
 
-def code_frame(frame, command, arg_count, args):
+def code_command_frame(frame, command, arg_count, args):
     if arg_count > MAX_ARGS:
-        return "ERR_FRM_WRONG_COMMAND"
+        return "ERR_FRM_WRONG_ARG_COUNT"
     frame[0] = 0xFF
     frame[1] = command
     frame[2] = arg_count
     for i in range(arg_count):
         frame[3 + i] = args[i]
-    crc = crc16(frame[:7])
+    crc = crc16(frame[:arg_count+3])
     frame[7] = ((crc >> 8) & 0xFF)
     frame[8] = (crc & 0xFF)
     return 0
 
-def decode_frame(frame, command, arg_count, args):
-    if frame[2] > MAX_ARGS:
-        return "ERR_FRM_WRONG_COMMAND"
+def decode_command_frame(frame, args):
     if frame[0] != 0xFF:
         return "ERR_FRM_WRONG_START"
-    command[0] = frame[1] 
-    arg_count[0] = frame[2] 
-    for i in range(arg_count[0]):
-        args[i] = frame[3 + i]
-    crc = crc16(frame[:7])
-    if crc != (frame[7] >> 8 | frame[8]):
+    if frame[2] >> 8 | frame[3] > MAX_SCORES:
+        return "ERR_FRM_WRONG_ARG_COUNT"
+    command = frame[1] 
+    arg_count = frame[2] << 8 | frame[3]
+    for i in range(arg_count):
+        args.append(frame[4 + i])
+    crc = crc16(frame[:4+arg_count])
+    if crc != (frame[404] << 8 | frame[405]):
         return "ERR_FRM_WRONG_CRC"
-    return 0
+    return 0, command, arg_count
 
 class App(ctk.CTk):
     def __init__(self, port):
         super().__init__()
         self.title("RTOS Benchmark")
-        self.geometry(f"{600}x{250}")
+        self.geometry(f"{700}x{250}")
         self.resizable(False,False)
         self.connection_status = False
         self.blocked_state = False
@@ -97,7 +98,7 @@ class App(ctk.CTk):
 
         while self.ser is None:
             try:
-                self.ser = serial.Serial(port, 38400, timeout=1)
+                self.ser = serial.Serial(port, 38400, timeout=2)
             except serial.SerialException:
                 print("Serial port error")
                 time.sleep(1)
@@ -121,30 +122,30 @@ class App(ctk.CTk):
         self.canvas.grid(row=1, column=2, pady=5)
         self.circle = self.canvas.create_oval(10, 10, 30, 30, outline=None, fill="red")
 
-        button_width = 240  # Adjust the width as needed
+        button_width = 250  # Adjust the width as needed
 
-        self.task_switch_input = ctk.CTkEntry(self.frame, placeholder_text="L. wątków; L. testów")
+        self.task_switch_input = ctk.CTkEntry(self.frame, placeholder_text="L. wątków; L. testów",width=button_width)
         self.task_switch_input.grid(row=3, column=0, pady=5,padx= 10)
         self.task_switch_button = ctk.CTkButton(self.frame, text="Test wywłaszczania wątków", command=self.send_command_0, width=button_width)
         self.task_switch_button.grid(row=3, column=1, pady=5)
         self.task_switch_label = ctk.CTkLabel(self.frame,text="    -----    ")
         self.task_switch_label.grid(row=3, column=2, pady=5, padx= 10)
 
-        self.semaphore_input = ctk.CTkEntry(self.frame)
+        self.semaphore_input = ctk.CTkEntry(self.frame,placeholder_text="L. wątków; L. testów",width=button_width)
         self.semaphore_input.grid(row=4, column=0, pady=5, padx= 10)
         self.semaphore_button = ctk.CTkButton(self.frame, text="Test semaforów", command=self.send_command_1, width=button_width, fg_color="darkorchid4")
         self.semaphore_button.grid(row=4, column=1, pady=5)
         self.semaphore_label = ctk.CTkLabel(self.frame,text="    -----    ")
         self.semaphore_label.grid(row=4, column=2, pady=5, padx= 10)
 
-        self.queue_input = ctk.CTkEntry(self.frame,placeholder_text="L. testów")
+        self.queue_input = ctk.CTkEntry(self.frame,placeholder_text="L. testów",width=button_width)
         self.queue_input.grid(row=5, column=0, pady=5, padx= 10)
         self.queue_button = ctk.CTkButton(self.frame, text="Test kolejki", command=self.send_command_2, width=button_width,  fg_color="darkgreen")
         self.queue_button.grid(row=5, column=1, pady=5)
         self.queue_label = ctk.CTkLabel(self.frame,text="    -----    ")
         self.queue_label.grid(row=5, column=2, pady=5, padx= 10)
 
-        self.context_input = ctk.CTkEntry(self.frame)
+        self.context_input = ctk.CTkEntry(self.frame, placeholder_text="L.W. niski pr;L.W. wysoki pr; L. testów",width=button_width)
         self.context_input.grid(row=6, column=0, pady=5, padx= 10)
         self.context_button = ctk.CTkButton(self.frame, text="Test zmiany kontekstu", command=self.send_command_3, width=button_width,fg_color="brown")
         self.context_button.grid(row=6, column=1, pady=5)
@@ -167,35 +168,53 @@ class App(ctk.CTk):
             self.semaphore_button._state = 'disabled'
             
 
+    def read_args(self, input_text):
+        if input_text:
+            args = [int(arg) for arg in input_text.split(';') if arg.strip()]
+            arg_count = len(args)
+        else:
+            # Set default values if input is empty
+            args = [10]  # Default value
+            arg_count = 1
+        return args,arg_count
+    
     def send_command_0(self):
         self.blocked_state = True
         self.change_state(True,False)
         
         
-        frame = bytearray(9)
+        buffor_tx = bytearray(9)
         command = 0x00
         arg_count = 0
-        args = []
-        result = code_frame(frame, command, arg_count, args)
+        args, arg_count= self.read_args(self.task_switch_input.get())
+        result = code_command_frame(buffor_tx, command, arg_count, args)
+        print([hex(byte) for byte in buffor_tx])
 
         if result == 0:
             self.ser.flush()
-            self.ser.write(frame)
-            # time.sleep(3)
-            response = self.ser.readline().strip()
-            if response:
-                command_anw = [0]
-                arg_count_anw = [0]
-                args_anw = [0,0,0,0]
-                if decode_frame(response,command_anw,arg_count_anw,args_anw):  
-                    if command_anw[0] == command and arg_count_anw[0] == 4:
-                        print("Sukces")
-                        bytes_data = bytes(args_anw)
-                        float_value = struct.unpack('<f', bytes_data)[0]
-                        self.task_switch_label.configure(text=str(float_value))
+            self.ser.write(buffor_tx)
+            # time.sleep(10)
+            response = self.ser.read(4060)
+            print(len(response))
+            if len(response) == 406 * args[0]:
+                scores = [response[i * 406: (i + 1) * 406] for i in range(args[0])]
+                for i in range(args[0]):
+                    print([hex(byte) for byte in scores[i]])
+                    with open(f"./res/test_watki/{i}.txt", "w") as file:  
+                        command_anw = 0
+                        arg_count_anw = 0
+                        args_anw = []
+                        result, command_anw, arg_count_anw = decode_command_frame(scores[i],args_anw)
+                        if result == 0 and command_anw == command:
+                            for j in range(0, arg_count_anw, 4):
+                                value_bytes = args_anw[j:j+4]
+                                uint_value = struct.unpack("<I", bytes(value_bytes))[0]
+                                # Convert uint32_t to float by dividing by 72
+                                float_value = uint_value / 72.0
+                                file.write(f"{float_value:.9f}\n")
             else:
-                print("Board didn't respond to command 0. Maybe resend?")
-      
+                print("Board didn't send full responce to frame. Maybe resend?")
+        
         
         self.blocked_state = False
 
@@ -208,7 +227,7 @@ class App(ctk.CTk):
         command = 0x01
         arg_count = 0
         args = []
-        result = code_frame(frame, command, arg_count, args)
+        result = code_command_frame(frame, command, arg_count, args)
 
         if result == 0:
             self.ser.flush()
@@ -219,7 +238,7 @@ class App(ctk.CTk):
                 command_anw = [0]
                 arg_count_anw = [0]
                 args_anw = [0,0,0,0]
-                if decode_frame(response,command_anw,arg_count_anw,args_anw):  
+                if decode_command_frame(response,command_anw,arg_count_anw,args_anw):  
                     if command_anw[0] == command and arg_count_anw[0] == 4:
                         print("Sukces")
                         bytes_data = bytes(args_anw)
@@ -241,7 +260,7 @@ class App(ctk.CTk):
         command = 0x02
         arg_count = 0
         args = []
-        result = code_frame(frame, command, arg_count, args)
+        result = code_command_frame(frame, command, arg_count, args)
 
         if result == 0:
             self.ser.flush()
@@ -252,7 +271,7 @@ class App(ctk.CTk):
                 command_anw = [0]
                 arg_count_anw = [0]
                 args_anw = [0,0,0,0]
-                if decode_frame(response,command_anw,arg_count_anw,args_anw):  
+                if decode_command_frame(response,command_anw,arg_count_anw,args_anw):  
                     if command_anw[0] == command and arg_count_anw[0] == 4:
                         print("Sukces")
                         bytes_data = bytes(args_anw)
@@ -273,7 +292,7 @@ class App(ctk.CTk):
         command = 0x03
         arg_count = 0
         args = []
-        result = code_frame(frame, command, arg_count, args)
+        result = code_command_frame(frame, command, arg_count, args)
 
         if result == 0:
             self.ser.flush()
@@ -284,7 +303,7 @@ class App(ctk.CTk):
                 command_anw = [0]
                 arg_count_anw = [0]
                 args_anw = [0,0,0,0]
-                if decode_frame(response,command_anw,arg_count_anw,args_anw):  
+                if decode_command_frame(response,command_anw,arg_count_anw,args_anw):  
                     if command_anw[0] == command and arg_count_anw[0] == 4:
                         print("Sukces")
                         bytes_data = bytes(args_anw)
