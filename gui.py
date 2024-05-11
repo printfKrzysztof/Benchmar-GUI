@@ -4,6 +4,8 @@ import threading
 import time
 import struct
 import argparse
+import matplotlib.pyplot as plt
+import random
 
 # Add this line at the beginning of your script to parse command-line arguments
 parser = argparse.ArgumentParser(description='Program do benchmarkowania RTOS')
@@ -14,6 +16,20 @@ args = parser.parse_args()
 serial_port = args.port
 MAX_ARGS = 4
 MAX_SCORES = 400
+TASK_SWITCH_TIME = float("{:.5f}".format(12.000 / 72.000))
+
+COLORS = [
+    '#1f77b4',  # blue
+    '#ff7f0e',  # orange
+    '#2ca02c',  # green
+    '#d62728',  # red
+    '#9467bd',  # purple
+    '#8c564b',  # brown
+    '#e377c2',  # pink
+    '#7f7f7f',  # gray
+    '#bcbd22',  # olive
+    '#17becf'   # cyan
+]
 
 mutex = threading.Lock() #Binary semaphore 
  
@@ -89,7 +105,7 @@ class App(ctk.CTk):
     def __init__(self, port):
         super().__init__()
         self.title("RTOS Benchmark")
-        self.geometry(f"{700}x{250}")
+        self.geometry(f"{800}x{400}")
         self.resizable(False,False)
         self.connection_status = False
         self.blocked_state = False
@@ -122,7 +138,11 @@ class App(ctk.CTk):
         self.canvas.grid(row=1, column=2, pady=5)
         self.circle = self.canvas.create_oval(10, 10, 30, 30, outline=None, fill="red")
 
+        self.score_label = ctk.CTkLabel(self.frame,text="Analiza")
+        self.score_label.grid(row=1,column = 3, pady=5, padx= 10)
+
         button_width = 250  # Adjust the width as needed
+        score_button_wdith = 70
 
         self.task_switch_input = ctk.CTkEntry(self.frame, placeholder_text="L. wątków; L. testów",width=button_width)
         self.task_switch_input.grid(row=3, column=0, pady=5,padx= 10)
@@ -130,6 +150,8 @@ class App(ctk.CTk):
         self.task_switch_button.grid(row=3, column=1, pady=5)
         self.task_switch_label = ctk.CTkLabel(self.frame,text="    -----    ")
         self.task_switch_label.grid(row=3, column=2, pady=5, padx= 10)
+        self.task_switch_score = ctk.CTkButton(self.frame,command=self.analyze_0,text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
+        self.task_switch_score.grid(row=3, column=3, pady=5, padx= 10)
 
         self.semaphore_input = ctk.CTkEntry(self.frame,placeholder_text="L. wątków; L. testów",width=button_width)
         self.semaphore_input.grid(row=4, column=0, pady=5, padx= 10)
@@ -211,12 +233,80 @@ class App(ctk.CTk):
                                 uint_value = struct.unpack("<I", bytes(value_bytes))[0]
                                 # Convert uint32_t to float by dividing by 72
                                 float_value = uint_value / 72.0
-                                file.write(f"{float_value:.9f}\n")
+                                file.write(f"{float_value:.5f}\n")
+                            self.task_switch_label.configure(text="OK")
+                        else:
+                            self.change_state(False,True)
+                            self.task_switch_label.configure(text="Err")
             else:
                 print("Board didn't send full responce to frame. Maybe resend?")
-        
-        
+                self.change_state(False,True)
+                self.task_switch_label.configure(text="Err")
+
         self.blocked_state = False
+        self.change_state(True,True)
+
+    def analyze_0(self):
+        args, arg_count = self.read_args(self.task_switch_input.get())
+        num_tasks = args[0] 
+        
+
+        task_times = []
+        system_intervals = []
+        # System analyzed
+        for i in range(num_tasks):
+            filename = f"./res/test_watki/{i}.txt"
+            # Read task times from file
+            with open(filename, "r") as file:
+                for line in file:
+                    task_times.append(float(line.strip()))
+    
+
+        # Find system intervals
+        task_times.sort()
+        prev_time = 0
+        for time in task_times:
+            if time - prev_time > TASK_SWITCH_TIME:
+                system_intervals.append((prev_time + TASK_SWITCH_TIME, time - prev_time-TASK_SWITCH_TIME))
+            prev_time = time
+
+    
+        # Adjust figure size to reduce stretching on y-axis
+        plt.figure(figsize=(num_tasks, num_tasks))  # You can adjust the figure width as needed
+        
+        # Loop through each file
+        for i in range(num_tasks):
+            filename = f"./res/test_watki/{i}.txt"
+            task_times = []
+            color = random.choice(COLORS)
+
+            # Read task times from file
+            with open(filename, "r") as file:
+                for line in file:
+                    task_times.append(float(line.strip()))
+            
+            # Plot each task as a straight line segment
+            for time_idx, task_time in enumerate(task_times):
+                plt.plot([task_time, task_time + TASK_SWITCH_TIME], [i, i], color=color)
+            
+        
+        for interval in system_intervals:
+            plt.plot([interval[0], interval[0] + interval[1]], [num_tasks, num_tasks], color='red', label='SYSTEM')
+        
+        # Set task labels on the y-axis
+        plt.yticks(range(num_tasks), [f'Task {i}' for i in range(num_tasks)])
+        
+        # Set labels and show plot
+        plt.xlabel('Time')
+        plt.ylabel('Task')
+        plt.title('Task Time Visualization')
+        plt.grid(True)  # Add grid for better readability
+        plt.tight_layout()  # Adjust layout to prevent overlapping labels
+        plt.show()
+
+        with open("times.txt", "w") as time_file:
+            for interval in system_intervals[num_tasks+1:-num_tasks+1]:
+                time_file.write(f"{interval[1]:.3f}\n")
 
     def send_command_1(self):
         self.blocked_state = True
