@@ -105,7 +105,7 @@ class App(ctk.CTk):
     def __init__(self, port):
         super().__init__()
         self.title("RTOS Benchmark")
-        self.geometry(f"{800}x{400}")
+        self.geometry(f"{950}x{350}")
         self.resizable(False,False)
         self.connection_status = False
         self.blocked_state = False
@@ -141,38 +141,66 @@ class App(ctk.CTk):
         self.score_label = ctk.CTkLabel(self.frame,text="Analiza")
         self.score_label.grid(row=1,column = 3, pady=5, padx= 10)
 
-        button_width = 250  # Adjust the width as needed
+        button_width = 350  # Adjust the width as needed
         score_button_wdith = 70
+        input_width = 275
 
-        self.task_switch_input = ctk.CTkEntry(self.frame, placeholder_text="L. wątków; L. testów",width=button_width)
-        self.task_switch_input.grid(row=3, column=0, pady=5,padx= 10)
-        self.task_switch_button = ctk.CTkButton(self.frame, text="Test wywłaszczania wątków", command=self.send_command_0, width=button_width)
-        self.task_switch_button.grid(row=3, column=1, pady=5)
+        self.task_force_switch_input = ctk.CTkEntry(self.frame, placeholder_text="L. wątków; L. testów",width=input_width)
+        self.task_force_switch_input.grid(row=3, column=0, pady=5,padx= 10)
+        self.task_force_switch_button = ctk.CTkButton(self.frame, text="Test wymuszonej zmiany wątków", command=self.task_force_switch_command, width=button_width)
+        self.task_force_switch_button.grid(row=3, column=1, pady=5)
+        self.task_force_switch_label = ctk.CTkLabel(self.frame,text="    -----    ")
+        self.task_force_switch_label.grid(row=3, column=2, pady=5, padx= 10)
+        self.task_force_switch_score = ctk.CTkButton(self.frame,command=self.task_force_switch_analyze,text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
+        self.task_force_switch_score.grid(row=3, column=3, pady=5, padx= 10)
+
+        self.task_force_switch_priority_input = ctk.CTkEntry(self.frame, placeholder_text="L. w. niski; L. w. wysoki ; L. testów",width=input_width)
+        self.task_force_switch_priority_input.grid(row=4, column=0, pady=5, padx= 10)
+        self.task_force_switch_priority_button = ctk.CTkButton(self.frame, text="Test wymuszonej zmiany wątków (różne piorytety)", command=self.task_force_switch_priority_command, width=button_width,fg_color="darkorchid4")
+        self.task_force_switch_priority_button.grid(row=4, column=1, pady=5)
+        self.task_force_switch_priority_label = ctk.CTkLabel(self.frame,text="    -----    ")
+        self.task_force_switch_priority_label.grid(row=4, column=2, pady=5, padx= 10)
+        self.task_force_switch_priority_score = ctk.CTkButton(self.frame,command=self.task_force_switch_priority_analyze,text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
+        self.task_force_switch_priority_score.grid(row=4, column=3, pady=5, padx= 10)
+
+        self.task_switch_input = ctk.CTkEntry(self.frame, placeholder_text="L. wątków; L. testów",width=input_width)
+        self.task_switch_input.grid(row=5, column=0, pady=5,padx= 10)
+        self.task_switch_button = ctk.CTkButton(self.frame, text="Test wywłaszczania wątków", command=self.task_switch_command, width=button_width,fg_color="brown")
+        self.task_switch_button.grid(row=5, column=1, pady=5)
         self.task_switch_label = ctk.CTkLabel(self.frame,text="    -----    ")
-        self.task_switch_label.grid(row=3, column=2, pady=5, padx= 10)
-        self.task_switch_score = ctk.CTkButton(self.frame,command=self.analyze_0,text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
-        self.task_switch_score.grid(row=3, column=3, pady=5, padx= 10)
+        self.task_switch_label.grid(row=5, column=2, pady=5, padx= 10)
+        self.task_switch_score = ctk.CTkButton(self.frame,command=self.task_switch_analyze,text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
+        self.task_switch_score.grid(row=5, column=3, pady=5, padx= 10)
 
-        self.semaphore_input = ctk.CTkEntry(self.frame,placeholder_text="L. wątków; L. testów",width=button_width)
-        self.semaphore_input.grid(row=4, column=0, pady=5, padx= 10)
-        self.semaphore_button = ctk.CTkButton(self.frame, text="Test semaforów", command=self.send_command_1, width=button_width, fg_color="darkorchid4")
-        self.semaphore_button.grid(row=4, column=1, pady=5)
+        self.task_switch_priority_input = ctk.CTkEntry(self.frame, placeholder_text="L. w. niski; L. w. wysoki ; L. testów",width=input_width)
+        self.task_switch_priority_input.grid(row=6, column=0, pady=5, padx= 10)
+        self.task_switch_priority_button = ctk.CTkButton(self.frame, text="Test wywłaszczenia wątków (różne piorytety)", command=self.task_switch_priority_command, width=button_width,fg_color="chocolate1")
+        self.task_switch_priority_button.grid(row=6, column=1, pady=5)
+        self.task_switch_priority_label = ctk.CTkLabel(self.frame,text="    -----    ")
+        self.task_switch_priority_label.grid(row=6, column=2, pady=5, padx= 10)
+        self.task_switch_priority_score = ctk.CTkButton(self.frame,command=self.task_switch_priority_analyze,text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
+        self.task_switch_priority_score.grid(row=6, column=3, pady=5, padx= 10)
+
+        self.semaphore_input = ctk.CTkEntry(self.frame,placeholder_text="L. wątków; L. testów",width=input_width)
+        self.semaphore_input.grid(row=7, column=0, pady=5, padx= 10)
+        self.semaphore_button = ctk.CTkButton(self.frame, text="Test semaforów", command=self.semaphore_command, width=button_width, fg_color="darkgoldenrod3")
+        self.semaphore_button.grid(row=7, column=1, pady=5)
         self.semaphore_label = ctk.CTkLabel(self.frame,text="    -----    ")
-        self.semaphore_label.grid(row=4, column=2, pady=5, padx= 10)
+        self.semaphore_label.grid(row=7, column=2, pady=5, padx= 10)
+        self.semaphore_score = ctk.CTkButton(self.frame,command=self.semaphore_analyze,text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
+        self.semaphore_score.grid(row=7, column=3, pady=5, padx= 10)
 
-        self.queue_input = ctk.CTkEntry(self.frame,placeholder_text="L. testów",width=button_width)
-        self.queue_input.grid(row=5, column=0, pady=5, padx= 10)
-        self.queue_button = ctk.CTkButton(self.frame, text="Test kolejki", command=self.send_command_2, width=button_width,  fg_color="darkgreen")
-        self.queue_button.grid(row=5, column=1, pady=5)
+        self.queue_input = ctk.CTkEntry(self.frame,placeholder_text="L. testów",width=input_width)
+        self.queue_input.grid(row=8, column=0, pady=5, padx= 10)
+        self.queue_button = ctk.CTkButton(self.frame, text="Test kolejki", command=self.queue_command, width=button_width,  fg_color="darkgreen")
+        self.queue_button.grid(row=8, column=1, pady=5)
         self.queue_label = ctk.CTkLabel(self.frame,text="    -----    ")
-        self.queue_label.grid(row=5, column=2, pady=5, padx= 10)
+        self.queue_label.grid(row=8, column=2, pady=5, padx= 10)
+        self.queue_score = ctk.CTkButton(self.frame,command=self.queue_analyze,text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
+        self.queue_score.grid(row=8, column=3, pady=5, padx= 10)
 
-        self.context_input = ctk.CTkEntry(self.frame, placeholder_text="L.W. niski pr;L.W. wysoki pr; L. testów",width=button_width)
-        self.context_input.grid(row=6, column=0, pady=5, padx= 10)
-        self.context_button = ctk.CTkButton(self.frame, text="Test zmiany kontekstu", command=self.send_command_3, width=button_width,fg_color="brown")
-        self.context_button.grid(row=6, column=1, pady=5)
-        self.context_label = ctk.CTkLabel(self.frame,text="    -----    ")
-        self.context_label.grid(row=6, column=2, pady=5, padx= 10)
+
+        
 
 
     def change_state(self, diode_state, button_state):
@@ -200,7 +228,7 @@ class App(ctk.CTk):
             arg_count = 1
         return args,arg_count
     
-    def send_command_0(self):
+    def task_force_switch_command(self):
         self.blocked_state = True
         self.change_state(True,False)
         
@@ -246,7 +274,7 @@ class App(ctk.CTk):
         self.blocked_state = False
         self.change_state(True,True)
 
-    def analyze_0(self):
+    def task_force_switch_analyze(self):
         args, arg_count = self.read_args(self.task_switch_input.get())
         num_tasks = args[0] 
         
@@ -308,102 +336,35 @@ class App(ctk.CTk):
             for interval in system_intervals[num_tasks+1:-num_tasks+1]:
                 time_file.write(f"{interval[1]:.3f}\n")
 
-    def send_command_1(self):
-        self.blocked_state = True
-        self.change_state(True,False)
-        
-        
-        frame = bytearray(9)
-        command = 0x01
-        arg_count = 0
-        args = []
-        result = code_command_frame(frame, command, arg_count, args)
+    def task_force_switch_priority_command(self):
+        pass
 
-        if result == 0:
-            self.ser.flush()
-            self.ser.write(frame)
-            # time.sleep(3)
-            response = self.ser.readline().strip()
-            if response:
-                command_anw = [0]
-                arg_count_anw = [0]
-                args_anw = [0,0,0,0]
-                if decode_command_frame(response,command_anw,arg_count_anw,args_anw):  
-                    if command_anw[0] == command and arg_count_anw[0] == 4:
-                        print("Sukces")
-                        bytes_data = bytes(args_anw)
-                        float_value = struct.unpack('<f', bytes_data)[0]
-                        self.semaphore_label.configure(text=str(float_value))
-            else:
-                print("Board didn't respond to command 1. Maybe resend?")
-      
+    def task_force_switch_priority_analyze(self):
+        pass
         
-        self.blocked_state = False
+    def task_switch_command(self):
+        pass
 
+    def task_switch_analyze(self):
+        pass
 
-    def send_command_2(self):
-        self.blocked_state = True
-        self.change_state(True,False)
-        
-        
-        frame = bytearray(9)
-        command = 0x02
-        arg_count = 0
-        args = []
-        result = code_command_frame(frame, command, arg_count, args)
+    def task_switch_priority_command(self):
+        pass
 
-        if result == 0:
-            self.ser.flush()
-            self.ser.write(frame)
-            # time.sleep(3)
-            response = self.ser.readline().strip()
-            if response:
-                command_anw = [0]
-                arg_count_anw = [0]
-                args_anw = [0,0,0,0]
-                if decode_command_frame(response,command_anw,arg_count_anw,args_anw):  
-                    if command_anw[0] == command and arg_count_anw[0] == 4:
-                        print("Sukces")
-                        bytes_data = bytes(args_anw)
-                        float_value = struct.unpack('<f', bytes_data)[0]
-                        self.queue_label.configure(text=str(float_value))
-            else:
-                print("Board didn't respond to command 2. Maybe resend?")
-      
+    def task_switch_priority_analyze(self):
+        pass
         
-        self.blocked_state = False
+    def semaphore_command(self):
+        pass
 
-    def send_command_3(self):
-        self.blocked_state = True
-        self.change_state(True,False)
-        
-        
-        frame = bytearray(9)
-        command = 0x03
-        arg_count = 0
-        args = []
-        result = code_command_frame(frame, command, arg_count, args)
+    def semaphore_analyze(self):
+        pass
 
-        if result == 0:
-            self.ser.flush()
-            self.ser.write(frame)
-            # time.sleep(3)
-            response = self.ser.readline().strip()
-            if response:
-                command_anw = [0]
-                arg_count_anw = [0]
-                args_anw = [0,0,0,0]
-                if decode_command_frame(response,command_anw,arg_count_anw,args_anw):  
-                    if command_anw[0] == command and arg_count_anw[0] == 4:
-                        print("Sukces")
-                        bytes_data = bytes(args_anw)
-                        float_value = struct.unpack('<f', bytes_data)[0]
-                        self.context_label.configure(text=str(float_value))
-            else:
-                print("Board didn't respond to command 3. Maybe resend?")
-      
-        
-        self.blocked_state = False
+    def queue_command(self):
+        pass
+
+    def queue_analyze(self):
+        pass
 
 if __name__ == "__main__":
     app = App(serial_port)
