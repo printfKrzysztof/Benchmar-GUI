@@ -20,16 +20,10 @@ MAX_SCORES = 400
 TASK_SWITCH_TIME = float("{:.9f}".format(12.000 / 72.000))
 
 COLORS = [
-    '#1f77b4',  # blue
-    '#ff7f0e',  # orange
-    '#2ca02c',  # green
-    '#d62728',  # red
-    '#9467bd',  # purple
-    '#8c564b',  # brown
-    '#e377c2',  # pink
-    '#7f7f7f',  # gray
-    '#bcbd22',  # olive
-    '#17becf'   # cyan
+    'blue',  
+    'green',  
+    'purple',  
+    'olive' 
 ]
 
 mutex = threading.Lock() #Binary semaphore 
@@ -115,7 +109,7 @@ class App(ctk.CTk):
 
         while self.ser is None:
             try:
-                self.ser = serial.Serial(port, 38400, timeout=2)
+                self.ser = serial.Serial(port, 38400, timeout=5)
             except serial.SerialException:
                 print("Serial port error")
                 time.sleep(1)
@@ -201,9 +195,6 @@ class App(ctk.CTk):
         self.queue_score.grid(row=8, column=3, pady=5, padx= 10)
 
 
-        
-
-
     def change_state(self, diode_state, button_state):
 
         if diode_state is True:
@@ -243,7 +234,7 @@ class App(ctk.CTk):
     def task_force_switch_command(self):
         self.blocked_state = True
         self.change_state(True,False)
-        self.delete_old_measurements("./res/test_watki")
+        self.delete_old_measurements("./res/task_force_switch")
         
         buffor_tx = bytearray(9)
         command = 0x00
@@ -262,8 +253,8 @@ class App(ctk.CTk):
                 scores = [response[i * 406: (i + 1) * 406] for i in range(args[0])]
                 for i in range(args[0]):
                     print([hex(byte) for byte in scores[i]])
-                    with open(f"./res/test_watki/{i}.txt", "w") as file: 
-                        with open(f"./res/test_watki/raw{i}.txt", "w") as file_raw: 
+                    with open(f"./res/task_force_switch/{i}.txt", "w") as file: 
+                        with open(f"./res/task_force_switch/raw{i}.txt", "w") as file_raw: 
                             command_anw = 0
                             arg_count_anw = 0
                             args_anw = []
@@ -297,7 +288,7 @@ class App(ctk.CTk):
         system_intervals = []
         # System analyzed
         for i in range(num_tasks):
-            filename = f"./res/test_watki/{i}.txt"
+            filename = f"./res/task_force_switch/{i}.txt"
             # Read task times from file
             with open(filename, "r") as file:
                 for line in file:
@@ -318,9 +309,124 @@ class App(ctk.CTk):
         
         # Loop through each file
         for i in range(num_tasks):
-            filename = f"./res/test_watki/{i}.txt"
+            filename = f"./res/task_force_switch/{i}.txt"
             task_times = []
-            color = random.choice(COLORS)
+            # color = random.choice(COLORS)
+
+            # Read task times from file
+            with open(filename, "r") as file:
+                for line in file:
+                    task_times.append(float(line.strip()))
+            
+            # Plot each task as a straight line segment
+            for time_idx, task_time in enumerate(task_times):
+                plt.plot([task_time, task_time + TASK_SWITCH_TIME], [i, i], color='blue')
+            
+        
+        for interval in system_intervals:
+            plt.plot([interval[0], interval[0] + interval[1]], [num_tasks, num_tasks], color='red', label='SYSTEM')
+        
+        # Set task labels on the y-axis
+        plt.yticks(range(num_tasks), [f'Task {i}' for i in range(num_tasks)])
+        
+        # Set labels and show plot
+        plt.xlabel('Time')
+        plt.ylabel('Task')
+        plt.title('Task Time Visualization')
+        plt.grid(True)  # Add grid for better readability
+        plt.tight_layout()  # Adjust layout to prevent overlapping labels
+        plt.show()
+
+        with open("times.txt", "w") as time_file:
+            for interval in system_intervals[num_tasks+1:-(num_tasks+1)]:
+                time_file.write(f"{interval[1]:.3f}\n")
+
+    def task_force_switch_priority_command(self):
+        self.blocked_state = True
+        self.change_state(True,False)
+        self.delete_old_measurements("./res/task_force_switch_priority")
+        
+        buffor_tx = bytearray(9)
+        command = 0x01
+        arg_count = 0
+        args, arg_count= self.read_args(self.task_force_switch_priority_input.get())
+        result = code_command_frame(buffor_tx, command, arg_count, args)
+        print([hex(byte) for byte in buffor_tx])
+
+        if result == 0:
+            self.ser.flush()
+            self.ser.write(buffor_tx)
+            # time.sleep(10)
+            thread_count = (args[0]+args[1])
+            response = self.ser.read(406 * thread_count)
+            print(len(response))
+            if len(response) == 406 * thread_count:
+                scores = [response[i * 406: (i + 1) * 406] for i in range(thread_count)]
+                for i in range(thread_count):
+                    print([hex(byte) for byte in scores[i]])
+                    with open(f"./res/task_force_switch_priority/{i}.txt", "w") as file: 
+                        with open(f"./res/task_force_switch_priority/raw{i}.txt", "w") as file_raw: 
+                            command_anw = 0
+                            arg_count_anw = 0
+                            args_anw = []
+                            result, command_anw, arg_count_anw = decode_command_frame(scores[i],args_anw)
+                            if result == 0 and command_anw == command:
+                                for j in range(0, arg_count_anw, 4):
+                                    value_bytes = args_anw[j:j+4]
+                                    uint_value = struct.unpack("<I", bytes(value_bytes))[0]
+                                    file_raw.write(f"{uint_value}\n")
+                                    # Convert uint32_t to float by dividing by 72
+                                    float_value = uint_value / 72.0
+                                    file.write(f"{float_value:.9f}\n")
+                                self.task_force_switch_priority_label.configure(text="OK")
+                            else:
+                                self.change_state(False,True)
+                                self.task_force_switch_priority_label.configure(text="Err")
+            else:
+                print("Board didn't send full responce to frame. Maybe resend?")
+                self.change_state(False,True)
+                self.task_force_switch_priority_label.configure(text="Err")
+
+        self.blocked_state = False
+        self.change_state(True,True)
+
+    def task_force_switch_priority_analyze(self):
+        args, arg_count = self.read_args(self.task_force_switch_priority_input.get())
+        num_tasks = args[0] + args[1]
+        
+
+        task_times = []
+        system_intervals = []
+        # System analyzed
+        for i in range(num_tasks):
+            filename = f"./res/task_force_switch_priority/{i}.txt"
+            # Read task times from file
+            with open(filename, "r") as file:
+                for line in file:
+                    task_times.append(float(line.strip()))
+    
+
+        # Find system intervals
+        task_times.sort()
+        prev_time = 0
+        for time in task_times:
+            if time - prev_time > TASK_SWITCH_TIME:
+                system_intervals.append((prev_time + TASK_SWITCH_TIME, time - prev_time-TASK_SWITCH_TIME))
+            prev_time = time
+
+    
+        # Adjust figure size to reduce stretching on y-axis
+        plt.figure(figsize=(num_tasks, num_tasks))  # You can adjust the figure width as needed
+        
+        # Loop through each file
+        for i in range(num_tasks):
+            filename = f"./res/task_force_switch_priority/{i}.txt"
+            task_times = []
+            if i<args[0]:
+                color = 'blue'
+            else:
+                color = 'green'
+            # color = random.choice(COLORS)
 
             # Read task times from file
             with open(filename, "r") as file:
@@ -347,26 +453,241 @@ class App(ctk.CTk):
         plt.show()
 
         with open("times.txt", "w") as time_file:
-            for interval in system_intervals[num_tasks+1:-num_tasks+1]:
+            for interval in system_intervals[num_tasks+1:-(num_tasks+1)]:
                 time_file.write(f"{interval[1]:.3f}\n")
-
-    def task_force_switch_priority_command(self):
-        pass
-
-    def task_force_switch_priority_analyze(self):
-        pass
         
     def task_switch_command(self):
-        pass
+        self.blocked_state = True
+        self.change_state(True,False)
+        self.delete_old_measurements("./res/task_switch")
+        
+        buffor_tx = bytearray(9)
+        command = 0x02
+        arg_count = 0
+        args, arg_count= self.read_args(self.task_switch_input.get())
+        result = code_command_frame(buffor_tx, command, arg_count, args)
+        print([hex(byte) for byte in buffor_tx])
+
+        if result == 0:
+            self.ser.flush()
+            self.ser.write(buffor_tx)
+            # time.sleep(10)
+            response = self.ser.read(406 * args[0])
+            print(len(response))
+            if len(response) == 406 * args[0]:
+                scores = [response[i * 406: (i + 1) * 406] for i in range(args[0])]
+                for i in range(args[0]):
+                    print([hex(byte) for byte in scores[i]])
+                    with open(f"./res/task_switch/{i}.txt", "w") as file: 
+                        with open(f"./res/task_switch/raw{i}.txt", "w") as file_raw: 
+                            command_anw = 0
+                            arg_count_anw = 0
+                            args_anw = []
+                            result, command_anw, arg_count_anw = decode_command_frame(scores[i],args_anw)
+                            if result == 0 and command_anw == command:
+                                for j in range(0, arg_count_anw, 4):
+                                    value_bytes = args_anw[j:j+4]
+                                    uint_value = struct.unpack("<I", bytes(value_bytes))[0]
+                                    file_raw.write(f"{uint_value}\n")
+                                    # Convert uint32_t to float by dividing by 72
+                                    float_value = uint_value / 72.0
+                                    file.write(f"{float_value:.9f}\n")
+                                self.task_switch_label.configure(text="OK")
+                            else:
+                                self.change_state(False,True)
+                                self.task_switch_label.configure(text="Err")
+            else:
+                print("Board didn't send full responce to frame. Maybe resend?")
+                self.change_state(False,True)
+                self.task_switch_label.configure(text="Err")
+
+        self.blocked_state = False
+        self.change_state(True,True)
 
     def task_switch_analyze(self):
-        pass
+        args, arg_count = self.read_args(self.task_switch_input.get())
+        num_tasks = args[0] 
+        
+
+        # task_times = []
+        # system_intervals = []
+        # # System analyzed
+        # for i in range(num_tasks):
+        #     filename = f"./res/task_switch/{i}.txt"
+        #     # Read task times from file
+        #     with open(filename, "r") as file:
+        #         for line in file:
+        #             task_times.append(float(line.strip()))
+    
+
+        # # Find system intervals
+        # task_times.sort()
+        # prev_time = 0
+        # for time in task_times:
+        #     if time - prev_time > TASK_SWITCH_TIME:
+        #         system_intervals.append((prev_time + TASK_SWITCH_TIME, time - prev_time-TASK_SWITCH_TIME))
+        #     prev_time = time
+
+    
+        # Adjust figure size to reduce stretching on y-axis
+        plt.figure(figsize=(num_tasks, num_tasks))  # You can adjust the figure width as needed
+        
+        # Loop through each file
+        for i in range(num_tasks):
+            filename = f"./res/task_switch/{i}.txt"
+            task_times = []
+            # color = random.choice(COLORS)
+
+            # Read task times from file
+            with open(filename, "r") as file:
+                lines = file.readlines()
+                # Iterate over the lines two at a time
+                for j in range(0, len(lines), 2):
+                # Ensure there are at least two lines to read
+                    if j + 1 < len(lines):
+                        # Append the tuple of two float values to the task_times list
+                        task_times.append((float(lines[j].strip()), float(lines[j + 1].strip())))
+
+            
+            # Plot each task as a straight line segment
+            for time_start, time_end in task_times:
+                plt.plot([time_start, time_end], [i, i], color='blue')
+            
+        
+        # for interval in system_intervals:
+        #     plt.plot([interval[0], interval[0] + interval[1]], [num_tasks, num_tasks], color='red', label='SYSTEM')
+        
+        # Set task labels on the y-axis
+        plt.yticks(range(num_tasks), [f'Task {i}' for i in range(num_tasks)])
+        
+        # Set labels and show plot
+        plt.xlabel('Time')
+        plt.ylabel('Task')
+        plt.title('Task Time Visualization')
+        plt.grid(True)  # Add grid for better readability
+        plt.tight_layout()  # Adjust layout to prevent overlapping labels
+        plt.show()
+
+        # with open("times.txt", "w") as time_file:
+        #     for interval in system_intervals[num_tasks+1:-(num_tasks+1)]:
+        #         time_file.write(f"{interval[1]:.3f}\n")
 
     def task_switch_priority_command(self):
-        pass
+        self.blocked_state = True
+        self.change_state(True,False)
+        self.delete_old_measurements("./res/task_switch_priority")
+        
+        buffor_tx = bytearray(9)
+        command = 0x03
+        arg_count = 0
+        args, arg_count= self.read_args(self.task_switch_priority_input.get())
+        result = code_command_frame(buffor_tx, command, arg_count, args)
+        print([hex(byte) for byte in buffor_tx])
+
+        if result == 0:
+            self.ser.flush()
+            self.ser.write(buffor_tx)
+            # time.sleep(10)
+            thread_count = (args[0]+args[1])
+            response = self.ser.read(406 * thread_count)
+            print(len(response))
+            if len(response) == 406 * thread_count:
+                scores = [response[i * 406: (i + 1) * 406] for i in range(thread_count)]
+                for i in range(thread_count):
+                    print([hex(byte) for byte in scores[i]])
+                    with open(f"./res/task_switch_priority/{i}.txt", "w") as file: 
+                        with open(f"./res/task_switch_priority/raw{i}.txt", "w") as file_raw: 
+                            command_anw = 0
+                            arg_count_anw = 0
+                            args_anw = []
+                            result, command_anw, arg_count_anw = decode_command_frame(scores[i],args_anw)
+                            if result == 0 and command_anw == command:
+                                for j in range(0, arg_count_anw, 4):
+                                    value_bytes = args_anw[j:j+4]
+                                    uint_value = struct.unpack("<I", bytes(value_bytes))[0]
+                                    file_raw.write(f"{uint_value}\n")
+                                    # Convert uint32_t to float by dividing by 72
+                                    float_value = uint_value / 72.0
+                                    file.write(f"{float_value:.9f}\n")
+                                self.task_switch_priority_label.configure(text="OK")
+                            else:
+                                self.change_state(False,True)
+                                self.task_switch_priority_label.configure(text="Err")
+            else:
+                print("Board didn't send full responce to frame. Maybe resend?")
+                self.change_state(False,True)
+                self.task_switch_priority_label.configure(text="Err")
+
+        self.blocked_state = False
+        self.change_state(True,True)
 
     def task_switch_priority_analyze(self):
-        pass
+        args, arg_count = self.read_args(self.task_switch_priority_input.get())
+        num_tasks = args[0] + args[1]
+        
+
+        # task_times = []
+        # system_intervals = []
+        # # System analyzed
+        # for i in range(num_tasks):
+        #     filename = f"./res/task_switch_priority/{i}.txt"
+        #     # Read task times from file
+        #     with open(filename, "r") as file:
+        #         for line in file:
+        #             task_times.append(float(line.strip()))
+    
+
+        # # Find system intervals
+        # task_times.sort()
+        # prev_time = 0
+        # for time in task_times:
+        #     if time - prev_time > TASK_SWITCH_TIME:
+        #         system_intervals.append((prev_time + TASK_SWITCH_TIME, time - prev_time-TASK_SWITCH_TIME))
+        #     prev_time = time
+
+    
+        # Adjust figure size to reduce stretching on y-axis
+        plt.figure(figsize=(num_tasks, num_tasks))  # You can adjust the figure width as needed
+        
+        # Loop through each file
+        for i in range(num_tasks):
+            filename = f"./res/task_switch_priority/{i}.txt"
+            task_times = []
+            # color = random.choice(COLORS)
+
+            # Read task times from file
+            with open(filename, "r") as file:
+                lines = file.readlines()
+                # Iterate over the lines two at a time
+                for j in range(0, len(lines), 2):
+                # Ensure there are at least two lines to read
+                    if j + 1 < len(lines):
+                        # Append the tuple of two float values to the task_times list
+                        task_times.append((float(lines[j].strip()), float(lines[j + 1].strip())))
+
+            
+            # Plot each task as a straight line segment
+            for time_start, time_end in task_times:
+                plt.plot([time_start, time_end], [i, i], color='blue')
+            
+        
+        # for interval in system_intervals:
+        #     plt.plot([interval[0], interval[0] + interval[1]], [num_tasks, num_tasks], color='red', label='SYSTEM')
+        
+        # Set task labels on the y-axis
+        plt.yticks(range(num_tasks), [f'Task {i}' for i in range(num_tasks)])
+        
+        # Set labels and show plot
+        plt.xlabel('Time')
+        plt.ylabel('Task')
+        plt.title('Task Time Visualization')
+        plt.grid(True)  # Add grid for better readability
+        plt.tight_layout()  # Adjust layout to prevent overlapping labels
+        plt.show()
+
+        # with open("times.txt", "w") as time_file:
+        #     for interval in system_intervals[num_tasks+1:-(num_tasks+1)]:
+        #         time_file.write(f"{interval[1]:.3f}\n")
         
     def semaphore_command(self):
         pass
@@ -381,5 +702,16 @@ class App(ctk.CTk):
         pass
 
 if __name__ == "__main__":
+    directories = [
+    './res/task_force_switch',
+    './res/task_force_switch_priority',
+    './res/task_switch',
+    './res/task_switch_priority',
+    './res/semaphore',
+    './res/queue']
+
+# Create each directory if it doesn't exist
+    for directory in directories:
+        os.makedirs(directory, exist_ok=True)
     app = App(serial_port)
     app.mainloop()
