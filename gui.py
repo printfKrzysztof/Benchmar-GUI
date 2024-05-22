@@ -6,6 +6,7 @@ import struct
 import argparse
 import matplotlib.pyplot as plt
 import random
+import os, shutil
 
 # Add this line at the beginning of your script to parse command-line arguments
 parser = argparse.ArgumentParser(description='Program do benchmarkowania RTOS')
@@ -16,7 +17,7 @@ args = parser.parse_args()
 serial_port = args.port
 MAX_ARGS = 4
 MAX_SCORES = 400
-TASK_SWITCH_TIME = float("{:.5f}".format(12.000 / 72.000))
+TASK_SWITCH_TIME = float("{:.9f}".format(12.000 / 72.000))
 
 COLORS = [
     '#1f77b4',  # blue
@@ -228,15 +229,26 @@ class App(ctk.CTk):
             arg_count = 1
         return args,arg_count
     
+    def delete_old_measurements(self, folder):
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+    
     def task_force_switch_command(self):
         self.blocked_state = True
         self.change_state(True,False)
-        
+        self.delete_old_measurements("./res/test_watki")
         
         buffor_tx = bytearray(9)
         command = 0x00
         arg_count = 0
-        args, arg_count= self.read_args(self.task_switch_input.get())
+        args, arg_count= self.read_args(self.task_force_switch_input.get())
         result = code_command_frame(buffor_tx, command, arg_count, args)
         print([hex(byte) for byte in buffor_tx])
 
@@ -244,38 +256,40 @@ class App(ctk.CTk):
             self.ser.flush()
             self.ser.write(buffor_tx)
             # time.sleep(10)
-            response = self.ser.read(4060)
+            response = self.ser.read(406 * args[0])
             print(len(response))
             if len(response) == 406 * args[0]:
                 scores = [response[i * 406: (i + 1) * 406] for i in range(args[0])]
                 for i in range(args[0]):
                     print([hex(byte) for byte in scores[i]])
-                    with open(f"./res/test_watki/{i}.txt", "w") as file:  
-                        command_anw = 0
-                        arg_count_anw = 0
-                        args_anw = []
-                        result, command_anw, arg_count_anw = decode_command_frame(scores[i],args_anw)
-                        if result == 0 and command_anw == command:
-                            for j in range(0, arg_count_anw, 4):
-                                value_bytes = args_anw[j:j+4]
-                                uint_value = struct.unpack("<I", bytes(value_bytes))[0]
-                                # Convert uint32_t to float by dividing by 72
-                                float_value = uint_value / 72.0
-                                file.write(f"{float_value:.5f}\n")
-                            self.task_switch_label.configure(text="OK")
-                        else:
-                            self.change_state(False,True)
-                            self.task_switch_label.configure(text="Err")
+                    with open(f"./res/test_watki/{i}.txt", "w") as file: 
+                        with open(f"./res/test_watki/raw{i}.txt", "w") as file_raw: 
+                            command_anw = 0
+                            arg_count_anw = 0
+                            args_anw = []
+                            result, command_anw, arg_count_anw = decode_command_frame(scores[i],args_anw)
+                            if result == 0 and command_anw == command:
+                                for j in range(0, arg_count_anw, 4):
+                                    value_bytes = args_anw[j:j+4]
+                                    uint_value = struct.unpack("<I", bytes(value_bytes))[0]
+                                    file_raw.write(f"{uint_value}\n")
+                                    # Convert uint32_t to float by dividing by 72
+                                    float_value = uint_value / 72.0
+                                    file.write(f"{float_value:.9f}\n")
+                                self.task_force_switch_label.configure(text="OK")
+                            else:
+                                self.change_state(False,True)
+                                self.task_force_switch_label.configure(text="Err")
             else:
                 print("Board didn't send full responce to frame. Maybe resend?")
                 self.change_state(False,True)
-                self.task_switch_label.configure(text="Err")
+                self.task_force_switch_label.configure(text="Err")
 
         self.blocked_state = False
         self.change_state(True,True)
 
     def task_force_switch_analyze(self):
-        args, arg_count = self.read_args(self.task_switch_input.get())
+        args, arg_count = self.read_args(self.task_force_switch_input.get())
         num_tasks = args[0] 
         
 
