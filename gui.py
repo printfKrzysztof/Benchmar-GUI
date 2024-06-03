@@ -17,7 +17,12 @@ args = parser.parse_args()
 serial_port = args.port
 MAX_ARGS = 4
 MAX_SCORES = 400
-TASK_SWITCH_TIME = float("{:.9f}".format(12.000 / 72.000))
+
+# Values measured from a bear metal program!
+TASK_SWITCH_TICKS = 14
+TASK_SWITCH_TIME = float("{:.9f}".format(TASK_SWITCH_TICKS / 72.000))
+MEASSURE_TICKS = 6
+MEASSURE_TIME = float("{:.9f}".format(MEASSURE_TICKS / 72.000))
 
 COLORS = [
     'blue',  
@@ -194,7 +199,6 @@ class App(ctk.CTk):
         self.queue_score = ctk.CTkButton(self.frame,command=self.queue_analyze,text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
         self.queue_score.grid(row=8, column=3, pady=5, padx= 10)
 
-
     def change_state(self, diode_state, button_state):
 
         if diode_state is True:
@@ -208,7 +212,6 @@ class App(ctk.CTk):
         else:
             self.task_switch_button._state = 'disabled'
             self.semaphore_button._state = 'disabled'
-            
 
     def read_args(self, input_text):
         if input_text:
@@ -690,13 +693,165 @@ class App(ctk.CTk):
         #         time_file.write(f"{interval[1]:.3f}\n")
         
     def semaphore_command(self):
-        pass
+        self.blocked_state = True
+        self.change_state(True,False)
+        self.delete_old_measurements("./res/semaphore")
+        
+        buffor_tx = bytearray(9)
+        command = 0x04
+        arg_count = 0
+        args, arg_count= self.read_args(self.semaphore_input.get())
+        result = code_command_frame(buffor_tx, command, arg_count, args)
+        print([hex(byte) for byte in buffor_tx])
+
+        if result == 0:
+            self.ser.flush()
+            self.ser.write(buffor_tx)
+            # time.sleep(10)
+            response = self.ser.read(406 * args[0])
+            print(len(response))
+            if len(response) == 406 * args[0]:
+                scores = [response[i * 406: (i + 1) * 406] for i in range(args[0])]
+                for i in range(args[0]):
+                    print([hex(byte) for byte in scores[i]])
+                    with open(f"./res/semaphore/{i}.txt", "w") as file: 
+                        with open(f"./res/semaphore/raw{i}.txt", "w") as file_raw: 
+                            command_anw = 0
+                            arg_count_anw = 0
+                            args_anw = []
+                            result, command_anw, arg_count_anw = decode_command_frame(scores[i],args_anw)
+                            if result == 0 and command_anw == command:
+                                for j in range(0, arg_count_anw, 4):
+                                    value_bytes = args_anw[j:j+4]
+                                    uint_value = struct.unpack("<I", bytes(value_bytes))[0]
+                                    file_raw.write(f"{uint_value}\n")
+                                    # Convert uint32_t to float by dividing by 72
+                                    float_value = uint_value / 72.0
+                                    file.write(f"{float_value:.9f}\n")
+                                self.semaphore_label.configure(text="OK")
+                            else:
+                                self.change_state(False,True)
+                                self.semaphore_label.configure(text="Err")
+            else:
+                print("Board didn't send full responce to frame. Maybe resend?")
+                self.change_state(False,True)
+                self.semaphore_label.configure(text="Err")
+
+        self.blocked_state = False
+        self.change_state(True,True)
 
     def semaphore_analyze(self):
-        pass
+        args, arg_count = self.read_args(self.semaphore_input.get())
+        num_tasks = args[0] 
+        
+
+        
+        # system_intervals = []
+        # # System analyzed
+        # for i in range(num_tasks):
+        #     filename = f"./res/task_switch/{i}.txt"
+        #     # Read task times from file
+        #     with open(filename, "r") as file:
+        #         for line in file:
+        #             task_times.append(float(line.strip()))
+    
+
+        # # Find system intervals
+        # task_times.sort()
+        # prev_time = 0
+        # for time in task_times:
+        #     if time - prev_time > TASK_SWITCH_TIME:
+        #         system_intervals.append((prev_time + TASK_SWITCH_TIME, time - prev_time-TASK_SWITCH_TIME))
+        #     prev_time = time
+
+    
+        # Adjust figure size to reduce stretching on y-axis
+        plt.figure(figsize=(num_tasks, num_tasks))  # You can adjust the figure width as needed
+        
+        # Loop through each file
+        for i in range(num_tasks):
+            filename = f"./res/semaphore/{i}.txt"
+            # color = random.choice(COLORS)
+            task_times = []
+            # Read task times from file
+            with open(filename, "r") as file:
+                lines = file.readlines()
+                # Iterate over the lines two at a time
+                for j in range(len(lines)):
+                    # Append the tuple of two float values to the task_times list
+                    task_times.append(float(lines[j].strip()))
+
+            
+            # Plot each task as a straight line segment
+            for point in task_times:
+                plt.plot([point, point+ MEASSURE_TIME], [i,i], color='blue')
+            
+        
+        # for interval in system_intervals:
+        #     plt.plot([interval[0], interval[0] + interval[1]], [num_tasks, num_tasks], color='red', label='SYSTEM')
+        
+        # Set task labels on the y-axis
+        plt.yticks(range(num_tasks), [f'Task {i}' for i in range(num_tasks)])
+        
+        # Set labels and show plot
+        plt.xlabel('Time')
+        plt.ylabel('Task')
+        plt.title('Task Time Visualization')
+        plt.grid(True)  # Add grid for better readability
+        plt.tight_layout()  # Adjust layout to prevent overlapping labels
+        plt.show()
+
+        # with open("times.txt", "w") as time_file:
+        #     for interval in system_intervals[num_tasks+1:-(num_tasks+1)]:
+        #         time_file.write(f"{interval[1]:.3f}\n")
 
     def queue_command(self):
-        pass
+        self.blocked_state = True
+        self.change_state(True,False)
+        self.delete_old_measurements("./res/queue")
+        
+        buffor_tx = bytearray(9)
+        command = 0x05
+        arg_count = 0
+        args, arg_count= self.read_args(self.queue_input.get())
+        result = code_command_frame(buffor_tx, command, arg_count, args)
+        print([hex(byte) for byte in buffor_tx])
+
+        if result == 0:
+            self.ser.flush()
+            self.ser.write(buffor_tx)
+            # time.sleep(10)
+            response = self.ser.read(406 * 2)
+            print(len(response))
+            if len(response) == 406 * 2:
+                scores = [response[i * 406: (i + 1) * 406] for i in range(2)]
+                for i in range(2):
+                    print([hex(byte) for byte in scores[i]])
+                    with open(f"./res/queue/{i}.txt", "w") as file: 
+                        with open(f"./res/queue/raw{i}.txt", "w") as file_raw: 
+                            command_anw = 0
+                            arg_count_anw = 0
+                            args_anw = []
+                            result, command_anw, arg_count_anw = decode_command_frame(scores[i],args_anw)
+                            if result == 0 and command_anw == command:
+                                for j in range(0, arg_count_anw, 4):
+                                    value_bytes = args_anw[j:j+4]
+                                    uint_value = struct.unpack("<I", bytes(value_bytes))[0]
+                                    file_raw.write(f"{uint_value}\n")
+                                    # Convert uint32_t to float by dividing by 72
+                                    float_value = uint_value / 72.0
+                                    file.write(f"{float_value:.9f}\n")
+                                self.queue_label.configure(text="OK")
+                            else:
+                                self.change_state(False,True)
+                                self.queue_label.configure(text="Err")
+            else:
+                print("Board didn't send full responce to frame. Maybe resend?")
+                self.change_state(False,True)
+                self.queue_label.configure(text="Err")
+
+        self.blocked_state = False
+        self.change_state(True,True)
 
     def queue_analyze(self):
         pass
