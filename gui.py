@@ -145,6 +145,17 @@ class App(ctk.CTk):
         score_button_wdith = 70
         input_width = 275
 
+        self.radio_var = ctk.Variable(value=1)  # Variable to track the selected radio button
+
+        self.radio_button1 = ctk.CTkRadioButton(self.frame, text="FreeRTOS", variable=self.radio_var, value=1, command=self.change_radio_button)
+        self.radio_button1.grid(row=0, column=0, padx=10, pady=5)
+
+        self.radio_button2 = ctk.CTkRadioButton(self.frame, text="EmbOS", variable=self.radio_var, value=2, command=self.change_radio_button)
+        self.radio_button2.grid(row=0, column=1, padx=10, pady=5)
+
+        self.radio_button3 = ctk.CTkRadioButton(self.frame, text="Zephyr", variable=self.radio_var, value=3, command=self.change_radio_button)
+        self.radio_button3.grid(row=0, column=2, padx=10, pady=5)
+
         self.task_force_switch_input = ctk.CTkEntry(self.frame, placeholder_text="L. wątków; L. testów",width=input_width)
         self.task_force_switch_input.grid(row=3, column=0, pady=5,padx= 10)
         self.task_force_switch_button = ctk.CTkButton(self.frame, text="Test wymuszonej zmiany wątków", command=self.task_force_switch_command, width=button_width)
@@ -213,6 +224,18 @@ class App(ctk.CTk):
             self.task_switch_button._state = 'disabled'
             self.semaphore_button._state = 'disabled'
 
+    def change_radio_button(self):
+        if self.radio_var.get() == 3:
+            TASK_SWITCH_TICKS = 59
+            TASK_SWITCH_TIME = float("{:.9f}".format(TASK_SWITCH_TICKS / 72.000))
+            MEASSURE_TICKS = 46
+            MEASSURE_TIME = float("{:.9f}".format(MEASSURE_TICKS / 72.000))
+        else:
+            TASK_SWITCH_TICKS = 14
+            TASK_SWITCH_TIME = float("{:.9f}".format(TASK_SWITCH_TICKS / 72.000))
+            MEASSURE_TICKS = 6
+            MEASSURE_TIME = float("{:.9f}".format(MEASSURE_TICKS / 72.000))
+            
     def read_args(self, input_text):
         if input_text:
             args = [int(arg) for arg in input_text.split(';') if arg.strip()]
