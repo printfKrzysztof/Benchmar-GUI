@@ -1,0 +1,16 @@
+Test wywłaszczenia wątków:
+	- test 5 wątków po 5 pomiarów:
+		- Średni czas zmiany wątku | przebywania w wątku: 1939.7916666666667 | 13950224.916666666
+		- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: 1269.3745311587948 | 6018367.954571087
+		- Maksymalny czas zmiany wątku | przebywania w wątku: 5318 | 16768448
+		- Minimalny czas zmiany wątku | przebywania w wątku: 1172 | 718596
+	- test 10 wątków po 5 pomiarów:
+		- Średni czas zmiany wątku | przebywania w wątku: 2024.0204081632653 | 13751078.408163264
+		- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: 1284.024102766934 | 6229808.253029315
+		- Maksymalny czas zmiany wątku | przebywania w wątku: 5384 | 16768448
+		- Minimalny czas zmiany wątku | przebywania w wątku: 1172 | 721906
+	- test 20 wątków po 10 pomiarów:
+		- Średni czas zmiany wątku | przebywania w wątku: 1635.9788944723618 | 15222630.405025126
+		- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: 1008.703253664589 | 4716232.064884357
+		- Maksymalny czas zmiany wątku | przebywania w wątku: 4608 | 16768448
+		- Minimalny czas zmiany wątku | przebywania w wątku: 1170 | 719284

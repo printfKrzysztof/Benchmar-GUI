@@ -7,6 +7,8 @@ import argparse
 import matplotlib.pyplot as plt
 import random
 import os, shutil
+import statistics
+
 
 # Add this line at the beginning of your script to parse command-line arguments
 parser = argparse.ArgumentParser(description='Program do benchmarkowania RTOS')
@@ -22,7 +24,7 @@ MAX_SCORES = 400
 TASK_SWITCH_TICKS = 14
 TASK_SWITCH_TIME = float("{:.9f}".format(TASK_SWITCH_TICKS / 72.000))
 MEASSURE_TICKS = 6
-MEASSURE_TIME = float("{:.9f}".format(MEASSURE_TICKS / 72.000))
+MEASSURE_TIME = float("{:.9f}".format(MEASSURE_TICKS / 72.000)) #Time in us
 
 COLORS = [
     'blue',  
@@ -114,7 +116,7 @@ class App(ctk.CTk):
 
         while self.ser is None:
             try:
-                self.ser = serial.Serial(port, 38400, timeout=5)
+                self.ser = serial.Serial(port, 38400, timeout=59)
             except serial.SerialException:
                 print("Serial port error")
                 time.sleep(1)
@@ -156,6 +158,18 @@ class App(ctk.CTk):
         self.radio_button3 = ctk.CTkRadioButton(self.frame, text="Zephyr", variable=self.radio_var, value=3, command=self.change_radio_button)
         self.radio_button3.grid(row=0, column=2, padx=10, pady=5)
 
+        self.start_test_button = ctk.CTkButton(self.frame,command=self.start_tests,text="Start", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
+        self.start_test_button.grid(row=0, column=3, padx=10, pady=5)
+        
+        # Path creation for results
+        self.radio_options = {
+            1: "FreeRTOS",
+            2: "EmbOS",
+            3: "Zephyr"
+        }
+        self.system_string = "FreeRTOS"
+        self.test_string = "custom"
+        
         self.task_force_switch_input = ctk.CTkEntry(self.frame, placeholder_text="L. wątków; L. testów",width=input_width)
         self.task_force_switch_input.grid(row=3, column=0, pady=5,padx= 10)
         self.task_force_switch_button = ctk.CTkButton(self.frame, text="Test wymuszonej zmiany wątków", command=self.task_force_switch_command, width=button_width)
@@ -210,6 +224,197 @@ class App(ctk.CTk):
         self.queue_score = ctk.CTkButton(self.frame,command=self.queue_analyze,text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
         self.queue_score.grid(row=8, column=3, pady=5, padx= 10)
 
+    def start_tests(self):
+        
+        with open(f"./results/{self.system_string}/summary.txt", "w") as summary_file:
+            switch_times_global=[]
+            in_task_times_global=[]
+            summary_file.write("Test wywłaszczenia wątków:\n")
+        # 5_5 part
+            summary_file.write("\t- test 5 wątków po 5 pomiarów:\n")
+            self.task_switch_input.delete(0, ctk.END)
+            self.task_switch_input.insert(0, "5; 10")  
+            for i in range(2):
+                task_times = []
+                switch_times = []
+                in_task_times = []
+                self.test_string = f"5_5_{i}"
+                if (self.task_switch_command() != 0):
+                    return False
+                # System analyzed
+                for j in range(5):
+                    filename = f"./results/{self.system_string}/task_switch/{self.test_string}/raw/{j}.txt"
+                    # Read task times from file
+                    with open(filename, "r") as file:
+                        for line in file:
+                            task_times.append(int(line.strip()))
+                time.sleep(1)
+            
+                task_times.sort()
+                
+                with open(f"./results/{self.system_string}/task_switch/{self.test_string}/sorted_times.txt", "w") as file:
+                    for timex in task_times:
+                        file.write(f"{timex}\n")
+                    
+                for j in range(1, len(task_times), 2):
+                    if j + 2 < len(task_times):
+                        switch_times.append(task_times[j+1] - task_times[j])
+                        switch_times_global.append(task_times[j+1] - task_times[j])
+                        in_task_times.append(task_times[j+2] - task_times[j+1])
+                        in_task_times_global.append(task_times[j+2] - task_times[j+1])
+                
+                with open(f"./results/{self.system_string}/task_switch/{self.test_string}/switch_times.txt", "w") as file:
+                    for timex in switch_times:
+                        file.write(f"{timex}\n")
+                
+                with open(f"./results/{self.system_string}/task_switch/{self.test_string}/in_task_times.txt", "w") as file:
+                    for timex in in_task_times:
+                        file.write(f"{timex}\n")
+            
+            mean_switch_time = statistics.mean(switch_times_global) if switch_times_global else 0
+            stdev_switch_time = statistics.stdev(switch_times_global) if len(switch_times_global) > 1 else 0
+            max_switch_time = max(switch_times_global) if switch_times_global else 0
+            min_switch_time = min(switch_times_global) if switch_times_global else 0
+
+            # Calculating statistics for in_task_times_global
+            mean_in_task_time = statistics.mean(in_task_times_global) if in_task_times_global else 0
+            stdev_in_task_time = statistics.stdev(in_task_times_global) if len(in_task_times_global) > 1 else 0
+            max_in_task_time = max(in_task_times_global) if in_task_times_global else 0
+            min_in_task_time = min(in_task_times_global) if in_task_times_global else 0 
+            
+            summary_file.write(f"\t\t- Średni czas zmiany wątku | przebywania w wątku: {mean_switch_time} | {mean_in_task_time}\n")
+            summary_file.write(f"\t\t- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: {stdev_switch_time} | {stdev_in_task_time}\n")
+            summary_file.write(f"\t\t- Maksymalny czas zmiany wątku | przebywania w wątku: {max_switch_time} | {max_in_task_time}\n")
+            summary_file.write(f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
+            
+            switch_times_global=[]
+            in_task_times_global=[]
+                    
+            
+                
+            # 10_5 part
+            self.task_switch_input.delete(0, ctk.END)
+            self.task_switch_input.insert(0, "10; 10")
+            summary_file.write("\t- test 10 wątków po 5 pomiarów:\n")
+            for i in range(2):
+                task_times = []
+                switch_times = []
+                in_task_times = []
+                self.test_string = f"10_5_{i}"
+                if (self.task_switch_command() != 0):
+                    return False
+                for j in range(10):
+                    filename = f"./results/{self.system_string}/task_switch/{self.test_string}/raw/{j}.txt"
+                    # Read task times from file
+                    with open(filename, "r") as file:
+                        for line in file:
+                            task_times.append(int(line.strip()))
+                time.sleep(1)
+            
+                task_times.sort()
+                
+                with open(f"./results/{self.system_string}/task_switch/{self.test_string}/sorted_times.txt", "w") as file:
+                    for timex in task_times:
+                        file.write(f"{timex}\n")
+                    
+                for j in range(1, len(task_times), 2):
+                    if j + 2 < len(task_times):
+                        switch_times.append(task_times[j+1] - task_times[j])
+                        switch_times_global.append(task_times[j+1] - task_times[j])
+                        in_task_times.append(task_times[j+2] - task_times[j+1])
+                        in_task_times_global.append(task_times[j+2] - task_times[j+1])
+                
+                with open(f"./results/{self.system_string}/task_switch/{self.test_string}/switch_times.txt", "w") as file:
+                    for timex in switch_times:
+                        file.write(f"{timex}\n")
+                
+                with open(f"./results/{self.system_string}/task_switch/{self.test_string}/in_task_times.txt", "w") as file:
+                    for timex in in_task_times:
+                        file.write(f"{timex}\n")
+                
+            mean_switch_time = statistics.mean(switch_times_global) if switch_times_global else 0
+            stdev_switch_time = statistics.stdev(switch_times_global) if len(switch_times_global) > 1 else 0
+            max_switch_time = max(switch_times_global) if switch_times_global else 0
+            min_switch_time = min(switch_times_global) if switch_times_global else 0
+
+            # Calculating statistics for in_task_times_global
+            mean_in_task_time = statistics.mean(in_task_times_global) if in_task_times_global else 0
+            stdev_in_task_time = statistics.stdev(in_task_times_global) if len(in_task_times_global) > 1 else 0
+            max_in_task_time = max(in_task_times_global) if in_task_times_global else 0
+            min_in_task_time = min(in_task_times_global) if in_task_times_global else 0 
+            
+            summary_file.write(f"\t\t- Średni czas zmiany wątku | przebywania w wątku: {mean_switch_time} | {mean_in_task_time}\n")
+            summary_file.write(f"\t\t- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: {stdev_switch_time} | {stdev_in_task_time}\n")
+            summary_file.write(f"\t\t- Maksymalny czas zmiany wątku | przebywania w wątku: {max_switch_time} | {max_in_task_time}\n")
+            summary_file.write(f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
+            
+            switch_times_global=[]
+            in_task_times_global=[]
+            
+            # 20_10 part
+            self.task_switch_input.delete(0, ctk.END)
+            self.task_switch_input.insert(0, "20; 20")
+            summary_file.write("\t- test 20 wątków po 10 pomiarów:\n")
+            for i in range(10):
+                task_times = []
+                switch_times = []
+                in_task_times = []
+                self.test_string = f"20_10_{i}"
+                if (self.task_switch_command() != 0):
+                    return False
+                for j in range(20):
+                    filename = f"./results/{self.system_string}/task_switch/{self.test_string}/raw/{j}.txt"
+                    # Read task times from file
+                    with open(filename, "r") as file:
+                        for line in file:
+                            task_times.append(int(line.strip()))
+                time.sleep(1)
+            
+                task_times.sort()
+                
+                with open(f"./results/{self.system_string}/task_switch/{self.test_string}/sorted_times.txt", "w") as file:
+                    for timex in task_times:
+                        file.write(f"{timex}\n")
+                    
+                for j in range(1, len(task_times), 2):
+                    if j + 2 < len(task_times):
+                        switch_times.append(task_times[j+1] - task_times[j])
+                        switch_times_global.append(task_times[j+1] - task_times[j])
+                        in_task_times.append(task_times[j+2] - task_times[j+1])
+                        in_task_times_global.append(task_times[j+2] - task_times[j+1])
+                
+                with open(f"./results/{self.system_string}/task_switch/{self.test_string}/switch_times.txt", "w") as file:
+                    for timex in switch_times:
+                        file.write(f"{timex}\n")
+                
+                with open(f"./results/{self.system_string}/task_switch/{self.test_string}/in_task_times.txt", "w") as file:
+                    for timex in in_task_times:
+                        file.write(f"{timex}\n")
+                
+            
+            mean_switch_time = statistics.mean(switch_times_global) if switch_times_global else 0
+            stdev_switch_time = statistics.stdev(switch_times_global) if len(switch_times_global) > 1 else 0
+            max_switch_time = max(switch_times_global) if switch_times_global else 0
+            min_switch_time = min(switch_times_global) if switch_times_global else 0
+
+            # Calculating statistics for in_task_times_global
+            mean_in_task_time = statistics.mean(in_task_times_global) if in_task_times_global else 0
+            stdev_in_task_time = statistics.stdev(in_task_times_global) if len(in_task_times_global) > 1 else 0
+            max_in_task_time = max(in_task_times_global) if in_task_times_global else 0
+            min_in_task_time = min(in_task_times_global) if in_task_times_global else 0 
+            
+            summary_file.write(f"\t\t- Średni czas zmiany wątku | przebywania w wątku: {mean_switch_time} | {mean_in_task_time}\n")
+            summary_file.write(f"\t\t- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: {stdev_switch_time} | {stdev_in_task_time}\n")
+            summary_file.write(f"\t\t- Maksymalny czas zmiany wątku | przebywania w wątku: {max_switch_time} | {max_in_task_time}\n")
+            summary_file.write(f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
+            
+            switch_times_global=[]
+            in_task_times_global=[]
+                    
+
+        
+            
+    
     def change_state(self, diode_state, button_state):
 
         if diode_state is True:
@@ -225,6 +430,7 @@ class App(ctk.CTk):
             self.semaphore_button._state = 'disabled'
 
     def change_radio_button(self):
+        self.system_string = self.radio_options.get(self.radio_var.get(), "Unknown")
         if self.radio_var.get() == 3:
             TASK_SWITCH_TICKS = 59
             TASK_SWITCH_TIME = float("{:.9f}".format(TASK_SWITCH_TICKS / 72.000))
@@ -246,22 +452,28 @@ class App(ctk.CTk):
             arg_count = 1
         return args,arg_count
     
-    def delete_old_measurements(self, folder):
-        for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
+    def delete_old_measurements(self, dir):
+        folders = [f"{dir}/raw", f"{dir}/us"]
+        
+        for folder in folders:
+            os.makedirs(folder, exist_ok=True)
+            for filename in os.listdir(folder):
+                file_path = os.path.join(folder, filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    print('Failed to delete %s. Reason: %s' % (file_path, e))
     
     def task_force_switch_command(self):
         self.blocked_state = True
         self.change_state(True,False)
-        self.delete_old_measurements("./res/task_force_switch")
+        fpath= f"./results/{self.system_string}/task_force_switch/{self.test_string}"
+        self.delete_old_measurements(fpath)
         
+        error = 0
         buffor_tx = bytearray(9)
         command = 0x00
         arg_count = 0
@@ -279,8 +491,8 @@ class App(ctk.CTk):
                 scores = [response[i * 406: (i + 1) * 406] for i in range(args[0])]
                 for i in range(args[0]):
                     print([hex(byte) for byte in scores[i]])
-                    with open(f"./res/task_force_switch/{i}.txt", "w") as file: 
-                        with open(f"./res/task_force_switch/raw{i}.txt", "w") as file_raw: 
+                    with open(f"{fpath}/us/{i}.txt", "w") as file: 
+                        with open(f"{fpath}/raw/{i}.txt", "w") as file_raw: 
                             command_anw = 0
                             arg_count_anw = 0
                             args_anw = []
@@ -297,13 +509,16 @@ class App(ctk.CTk):
                             else:
                                 self.change_state(False,True)
                                 self.task_force_switch_label.configure(text="Err")
+                                error = -1
             else:
                 print("Board didn't send full responce to frame. Maybe resend?")
                 self.change_state(False,True)
                 self.task_force_switch_label.configure(text="Err")
+                error = -1
 
         self.blocked_state = False
         self.change_state(True,True)
+        return error
 
     def task_force_switch_analyze(self):
         args, arg_count = self.read_args(self.task_force_switch_input.get())
@@ -368,9 +583,11 @@ class App(ctk.CTk):
                 time_file.write(f"{interval[1]:.3f}\n")
 
     def task_force_switch_priority_command(self):
+        error =0
         self.blocked_state = True
         self.change_state(True,False)
-        self.delete_old_measurements("./res/task_force_switch_priority")
+        fpath= f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}"
+        self.delete_old_measurements(fpath)
         
         buffor_tx = bytearray(9)
         command = 0x01
@@ -390,8 +607,8 @@ class App(ctk.CTk):
                 scores = [response[i * 406: (i + 1) * 406] for i in range(thread_count)]
                 for i in range(thread_count):
                     print([hex(byte) for byte in scores[i]])
-                    with open(f"./res/task_force_switch_priority/{i}.txt", "w") as file: 
-                        with open(f"./res/task_force_switch_priority/raw{i}.txt", "w") as file_raw: 
+                    with open(f"{fpath}/us/{i}.txt", "w") as file: 
+                        with open(f"{fpath}/raw/{i}.txt", "w") as file_raw: 
                             command_anw = 0
                             arg_count_anw = 0
                             args_anw = []
@@ -408,13 +625,16 @@ class App(ctk.CTk):
                             else:
                                 self.change_state(False,True)
                                 self.task_force_switch_priority_label.configure(text="Err")
+                                error =-1
             else:
                 print("Board didn't send full responce to frame. Maybe resend?")
                 self.change_state(False,True)
                 self.task_force_switch_priority_label.configure(text="Err")
+                error =-1
 
         self.blocked_state = False
         self.change_state(True,True)
+        return error
 
     def task_force_switch_priority_analyze(self):
         args, arg_count = self.read_args(self.task_force_switch_priority_input.get())
@@ -483,9 +703,11 @@ class App(ctk.CTk):
                 time_file.write(f"{interval[1]:.3f}\n")
         
     def task_switch_command(self):
+        error =0
         self.blocked_state = True
         self.change_state(True,False)
-        self.delete_old_measurements("./res/task_switch")
+        fpath= f"./results/{self.system_string}/task_switch/{self.test_string}"
+        self.delete_old_measurements(fpath)
         
         buffor_tx = bytearray(9)
         command = 0x02
@@ -504,8 +726,8 @@ class App(ctk.CTk):
                 scores = [response[i * 406: (i + 1) * 406] for i in range(args[0])]
                 for i in range(args[0]):
                     print([hex(byte) for byte in scores[i]])
-                    with open(f"./res/task_switch/{i}.txt", "w") as file: 
-                        with open(f"./res/task_switch/raw{i}.txt", "w") as file_raw: 
+                    with open(f"{fpath}/us/{i}.txt", "w") as file: 
+                        with open(f"{fpath}/raw/{i}.txt", "w") as file_raw: 
                             command_anw = 0
                             arg_count_anw = 0
                             args_anw = []
@@ -522,13 +744,16 @@ class App(ctk.CTk):
                             else:
                                 self.change_state(False,True)
                                 self.task_switch_label.configure(text="Err")
+                                error = -1
             else:
                 print("Board didn't send full responce to frame. Maybe resend?")
                 self.change_state(False,True)
                 self.task_switch_label.configure(text="Err")
+                error = -1
 
         self.blocked_state = False
         self.change_state(True,True)
+        return error
 
     def task_switch_analyze(self):
         args, arg_count = self.read_args(self.task_switch_input.get())
@@ -599,9 +824,11 @@ class App(ctk.CTk):
         #         time_file.write(f"{interval[1]:.3f}\n")
 
     def task_switch_priority_command(self):
+        error = 0
         self.blocked_state = True
         self.change_state(True,False)
-        self.delete_old_measurements("./res/task_switch_priority")
+        fpath= f"./results/{self.system_string}/task_switch_priority/{self.test_string}"
+        self.delete_old_measurements(fpath)
         
         buffor_tx = bytearray(9)
         command = 0x03
@@ -621,8 +848,8 @@ class App(ctk.CTk):
                 scores = [response[i * 406: (i + 1) * 406] for i in range(thread_count)]
                 for i in range(thread_count):
                     print([hex(byte) for byte in scores[i]])
-                    with open(f"./res/task_switch_priority/{i}.txt", "w") as file: 
-                        with open(f"./res/task_switch_priority/raw{i}.txt", "w") as file_raw: 
+                    with open(f"{fpath}/us/{i}.txt", "w") as file: 
+                        with open(f"{fpath}/raw/{i}.txt", "w") as file_raw: 
                             command_anw = 0
                             arg_count_anw = 0
                             args_anw = []
@@ -639,13 +866,16 @@ class App(ctk.CTk):
                             else:
                                 self.change_state(False,True)
                                 self.task_switch_priority_label.configure(text="Err")
+                                error = -1
             else:
                 print("Board didn't send full responce to frame. Maybe resend?")
                 self.change_state(False,True)
                 self.task_switch_priority_label.configure(text="Err")
+                error =-1
 
         self.blocked_state = False
         self.change_state(True,True)
+        return error
 
     def task_switch_priority_analyze(self):
         args, arg_count = self.read_args(self.task_switch_priority_input.get())
@@ -716,9 +946,11 @@ class App(ctk.CTk):
         #         time_file.write(f"{interval[1]:.3f}\n")
         
     def semaphore_command(self):
+        error = 0
         self.blocked_state = True
         self.change_state(True,False)
-        self.delete_old_measurements("./res/semaphore")
+        fpath= f"./results/{self.system_string}/semaphore/{self.test_string}"
+        self.delete_old_measurements(fpath)
         
         buffor_tx = bytearray(9)
         command = 0x04
@@ -737,8 +969,8 @@ class App(ctk.CTk):
                 scores = [response[i * 406: (i + 1) * 406] for i in range(args[0])]
                 for i in range(args[0]):
                     print([hex(byte) for byte in scores[i]])
-                    with open(f"./res/semaphore/{i}.txt", "w") as file: 
-                        with open(f"./res/semaphore/raw{i}.txt", "w") as file_raw: 
+                    with open(f"{fpath}/us/{i}.txt", "w") as file: 
+                        with open(f"{fpath}/raw/{i}.txt", "w") as file_raw: 
                             command_anw = 0
                             arg_count_anw = 0
                             args_anw = []
@@ -755,13 +987,16 @@ class App(ctk.CTk):
                             else:
                                 self.change_state(False,True)
                                 self.semaphore_label.configure(text="Err")
+                                error =-1
             else:
                 print("Board didn't send full responce to frame. Maybe resend?")
                 self.change_state(False,True)
                 self.semaphore_label.configure(text="Err")
+                error = -1
 
         self.blocked_state = False
         self.change_state(True,True)
+        return error
 
     def semaphore_analyze(self):
         args, arg_count = self.read_args(self.semaphore_input.get())
@@ -829,9 +1064,11 @@ class App(ctk.CTk):
         #         time_file.write(f"{interval[1]:.3f}\n")
 
     def queue_command(self):
+        error =0
         self.blocked_state = True
         self.change_state(True,False)
-        self.delete_old_measurements("./res/queue")
+        fpath= f"./results/{self.system_string}/queue/{self.test_string}"
+        self.delete_old_measurements(fpath)
         
         buffor_tx = bytearray(9)
         command = 0x05
@@ -850,8 +1087,8 @@ class App(ctk.CTk):
                 scores = [response[i * 406: (i + 1) * 406] for i in range(2)]
                 for i in range(2):
                     print([hex(byte) for byte in scores[i]])
-                    with open(f"./res/queue/{i}.txt", "w") as file: 
-                        with open(f"./res/queue/raw{i}.txt", "w") as file_raw: 
+                    with open(f"{fpath}/us/{i}.txt", "w") as file: 
+                        with open(f"{fpath}raw/{i}.txt", "w") as file_raw: 
                             command_anw = 0
                             arg_count_anw = 0
                             args_anw = []
@@ -868,25 +1105,25 @@ class App(ctk.CTk):
                             else:
                                 self.change_state(False,True)
                                 self.queue_label.configure(text="Err")
+                                error = -1
             else:
                 print("Board didn't send full responce to frame. Maybe resend?")
                 self.change_state(False,True)
                 self.queue_label.configure(text="Err")
+                error = -1
 
         self.blocked_state = False
         self.change_state(True,True)
+        return error
 
     def queue_analyze(self):
         pass
 
 if __name__ == "__main__":
     directories = [
-    './res/task_force_switch',
-    './res/task_force_switch_priority',
-    './res/task_switch',
-    './res/task_switch_priority',
-    './res/semaphore',
-    './res/queue']
+    './results/Zephyr',
+    './results/FreeRTOS',
+    './results/EmbOS']
 
 # Create each directory if it doesn't exist
     for directory in directories:
