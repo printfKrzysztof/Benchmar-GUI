@@ -265,8 +265,8 @@ class App(ctk.CTk):
     def start_tests(self):
 
         with open(f"./results/{self.system_string}/summary.txt", "a") as summary_file:
-            # switch_times_global=[]
-            # in_task_times_global=[]
+            # switch_times_global = []
+            # in_task_times_global = []
             # # TASK SWITCH
             # summary_file.write("Test wywłaszczenia wątków:\n")
             # # 5_5 part
@@ -298,9 +298,11 @@ class App(ctk.CTk):
             #     for j in range(1, len(task_times), 2):
             #         if j + 2 < len(task_times):
             #             switch_times.append(task_times[j+1] - task_times[j])
-            #             switch_times_global.append(task_times[j+1] - task_times[j])
+            #             switch_times_global.append(
+            #                 task_times[j+1] - task_times[j])
             #             in_task_times.append(task_times[j+2] - task_times[j+1])
-            #             in_task_times_global.append(task_times[j+2] - task_times[j+1])
+            #             in_task_times_global.append(
+            #                 task_times[j+2] - task_times[j+1])
 
             #     with open(f"./results/{self.system_string}/task_switch/{self.test_string}/switch_times.txt", "w") as file:
             #         for timex in switch_times:
@@ -310,24 +312,36 @@ class App(ctk.CTk):
             #         for timex in in_task_times:
             #             file.write(f"{timex}\n")
 
-            # mean_switch_time = statistics.mean(switch_times_global) if switch_times_global else 0
-            # stdev_switch_time = statistics.stdev(switch_times_global) if len(switch_times_global) > 1 else 0
-            # max_switch_time = max(switch_times_global) if switch_times_global else 0
-            # min_switch_time = min(switch_times_global) if switch_times_global else 0
+            # mean_switch_time = statistics.mean(
+            #     switch_times_global) if switch_times_global else 0
+            # stdev_switch_time = statistics.stdev(
+            #     switch_times_global) if len(switch_times_global) > 1 else 0
+            # max_switch_time = max(
+            #     switch_times_global) if switch_times_global else 0
+            # min_switch_time = min(
+            #     switch_times_global) if switch_times_global else 0
 
             # # Calculating statistics for in_task_times_global
-            # mean_in_task_time = statistics.mean(in_task_times_global) if in_task_times_global else 0
-            # stdev_in_task_time = statistics.stdev(in_task_times_global) if len(in_task_times_global) > 1 else 0
-            # max_in_task_time = max(in_task_times_global) if in_task_times_global else 0
-            # min_in_task_time = min(in_task_times_global) if in_task_times_global else 0
+            # mean_in_task_time = statistics.mean(
+            #     in_task_times_global) if in_task_times_global else 0
+            # stdev_in_task_time = statistics.stdev(
+            #     in_task_times_global) if len(in_task_times_global) > 1 else 0
+            # max_in_task_time = max(
+            #     in_task_times_global) if in_task_times_global else 0
+            # min_in_task_time = min(
+            #     in_task_times_global) if in_task_times_global else 0
 
-            # summary_file.write(f"\t\t- Średni czas zmiany wątku | przebywania w wątku: {mean_switch_time} | {mean_in_task_time}\n")
-            # summary_file.write(f"\t\t- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: {stdev_switch_time} | {stdev_in_task_time}\n")
-            # summary_file.write(f"\t\t- Maksymalny czas zmiany wątku | przebywania w wątku: {max_switch_time} | {max_in_task_time}\n")
-            # summary_file.write(f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Średni czas zmiany wątku | przebywania w wątku: {mean_switch_time} | {mean_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: {stdev_switch_time} | {stdev_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Maksymalny czas zmiany wątku | przebywania w wątku: {max_switch_time} | {max_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
 
-            # switch_times_global=[]
-            # in_task_times_global=[]
+            # switch_times_global = []
+            # in_task_times_global = []
 
             # # 10_5 part
             # self.task_switch_input.delete(0, ctk.END)
@@ -357,9 +371,11 @@ class App(ctk.CTk):
             #     for j in range(1, len(task_times), 2):
             #         if j + 2 < len(task_times):
             #             switch_times.append(task_times[j+1] - task_times[j])
-            #             switch_times_global.append(task_times[j+1] - task_times[j])
+            #             switch_times_global.append(
+            #                 task_times[j+1] - task_times[j])
             #             in_task_times.append(task_times[j+2] - task_times[j+1])
-            #             in_task_times_global.append(task_times[j+2] - task_times[j+1])
+            #             in_task_times_global.append(
+            #                 task_times[j+2] - task_times[j+1])
 
             #     with open(f"./results/{self.system_string}/task_switch/{self.test_string}/switch_times.txt", "w") as file:
             #         for timex in switch_times:
@@ -369,24 +385,36 @@ class App(ctk.CTk):
             #         for timex in in_task_times:
             #             file.write(f"{timex}\n")
 
-            # mean_switch_time = statistics.mean(switch_times_global) if switch_times_global else 0
-            # stdev_switch_time = statistics.stdev(switch_times_global) if len(switch_times_global) > 1 else 0
-            # max_switch_time = max(switch_times_global) if switch_times_global else 0
-            # min_switch_time = min(switch_times_global) if switch_times_global else 0
+            # mean_switch_time = statistics.mean(
+            #     switch_times_global) if switch_times_global else 0
+            # stdev_switch_time = statistics.stdev(
+            #     switch_times_global) if len(switch_times_global) > 1 else 0
+            # max_switch_time = max(
+            #     switch_times_global) if switch_times_global else 0
+            # min_switch_time = min(
+            #     switch_times_global) if switch_times_global else 0
 
             # # Calculating statistics for in_task_times_global
-            # mean_in_task_time = statistics.mean(in_task_times_global) if in_task_times_global else 0
-            # stdev_in_task_time = statistics.stdev(in_task_times_global) if len(in_task_times_global) > 1 else 0
-            # max_in_task_time = max(in_task_times_global) if in_task_times_global else 0
-            # min_in_task_time = min(in_task_times_global) if in_task_times_global else 0
+            # mean_in_task_time = statistics.mean(
+            #     in_task_times_global) if in_task_times_global else 0
+            # stdev_in_task_time = statistics.stdev(
+            #     in_task_times_global) if len(in_task_times_global) > 1 else 0
+            # max_in_task_time = max(
+            #     in_task_times_global) if in_task_times_global else 0
+            # min_in_task_time = min(
+            #     in_task_times_global) if in_task_times_global else 0
 
-            # summary_file.write(f"\t\t- Średni czas zmiany wątku | przebywania w wątku: {mean_switch_time} | {mean_in_task_time}\n")
-            # summary_file.write(f"\t\t- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: {stdev_switch_time} | {stdev_in_task_time}\n")
-            # summary_file.write(f"\t\t- Maksymalny czas zmiany wątku | przebywania w wątku: {max_switch_time} | {max_in_task_time}\n")
-            # summary_file.write(f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Średni czas zmiany wątku | przebywania w wątku: {mean_switch_time} | {mean_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: {stdev_switch_time} | {stdev_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Maksymalny czas zmiany wątku | przebywania w wątku: {max_switch_time} | {max_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
 
-            # switch_times_global=[]
-            # in_task_times_global=[]
+            # switch_times_global = []
+            # in_task_times_global = []
 
             # # 20_10 part
             # self.task_switch_input.delete(0, ctk.END)
@@ -416,9 +444,11 @@ class App(ctk.CTk):
             #     for j in range(1, len(task_times), 2):
             #         if j + 2 < len(task_times):
             #             switch_times.append(task_times[j+1] - task_times[j])
-            #             switch_times_global.append(task_times[j+1] - task_times[j])
+            #             switch_times_global.append(
+            #                 task_times[j+1] - task_times[j])
             #             in_task_times.append(task_times[j+2] - task_times[j+1])
-            #             in_task_times_global.append(task_times[j+2] - task_times[j+1])
+            #             in_task_times_global.append(
+            #                 task_times[j+2] - task_times[j+1])
 
             #     with open(f"./results/{self.system_string}/task_switch/{self.test_string}/switch_times.txt", "w") as file:
             #         for timex in switch_times:
@@ -428,21 +458,33 @@ class App(ctk.CTk):
             #         for timex in in_task_times:
             #             file.write(f"{timex}\n")
 
-            # mean_switch_time = statistics.mean(switch_times_global) if switch_times_global else 0
-            # stdev_switch_time = statistics.stdev(switch_times_global) if len(switch_times_global) > 1 else 0
-            # max_switch_time = max(switch_times_global) if switch_times_global else 0
-            # min_switch_time = min(switch_times_global) if switch_times_global else 0
+            # mean_switch_time = statistics.mean(
+            #     switch_times_global) if switch_times_global else 0
+            # stdev_switch_time = statistics.stdev(
+            #     switch_times_global) if len(switch_times_global) > 1 else 0
+            # max_switch_time = max(
+            #     switch_times_global) if switch_times_global else 0
+            # min_switch_time = min(
+            #     switch_times_global) if switch_times_global else 0
 
             # # Calculating statistics for in_task_times_global
-            # mean_in_task_time = statistics.mean(in_task_times_global) if in_task_times_global else 0
-            # stdev_in_task_time = statistics.stdev(in_task_times_global) if len(in_task_times_global) > 1 else 0
-            # max_in_task_time = max(in_task_times_global) if in_task_times_global else 0
-            # min_in_task_time = min(in_task_times_global) if in_task_times_global else 0
+            # mean_in_task_time = statistics.mean(
+            #     in_task_times_global) if in_task_times_global else 0
+            # stdev_in_task_time = statistics.stdev(
+            #     in_task_times_global) if len(in_task_times_global) > 1 else 0
+            # max_in_task_time = max(
+            #     in_task_times_global) if in_task_times_global else 0
+            # min_in_task_time = min(
+            #     in_task_times_global) if in_task_times_global else 0
 
-            # summary_file.write(f"\t\t- Średni czas zmiany wątku | przebywania w wątku: {mean_switch_time} | {mean_in_task_time}\n")
-            # summary_file.write(f"\t\t- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: {stdev_switch_time} | {stdev_in_task_time}\n")
-            # summary_file.write(f"\t\t- Maksymalny czas zmiany wątku | przebywania w wątku: {max_switch_time} | {max_in_task_time}\n")
-            # summary_file.write(f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Średni czas zmiany wątku | przebywania w wątku: {mean_switch_time} | {mean_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: {stdev_switch_time} | {stdev_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Maksymalny czas zmiany wątku | przebywania w wątku: {max_switch_time} | {max_in_task_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
 
             switch_times_global = []
             in_task_times_global = []
@@ -1104,7 +1146,7 @@ class App(ctk.CTk):
 
             # Plot each task as a straight line segment
             for time_slot in task_times:
-                plt.plot([time_slot-10000, time_slot+10000],
+                plt.plot([time_slot-1000, time_slot+1000],
                          [i, i], color='blue')
 
         # Set task labels on the y-axis

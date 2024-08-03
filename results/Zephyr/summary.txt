@@ -1,2 +1,27 @@
+Test wywłaszczenia wątków:
+	- test 5 wątków po 5 pomiarów:
+		- Średni czas zmiany wątku | przebywania w wątku: 5782.5 | 66347.20833333333
+		- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: 56.06607044656464 | 55.26992115425137
+		- Maksymalny czas zmiany wątku | przebywania w wątku: 5922 | 66430
+		- Minimalny czas zmiany wątku | przebywania w wątku: 5684 | 66250
+	- test 10 wątków po 5 pomiarów:
+		- Średni czas zmiany wątku | przebywania w wątku: 6058.9795918367345 | 66069.75510204081
+		- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: 200.52410604460084 | 195.8876735371675
+		- Maksymalny czas zmiany wątku | przebywania w wątku: 6336 | 66290
+		- Minimalny czas zmiany wątku | przebywania w wątku: 5800 | 65760
+	- test 20 wątków po 10 pomiarów:
+		- Średni czas zmiany wątku | przebywania w wątku: 6341.742713567839 | 65787.36783919598
+		- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: 92.6024503489613 | 100.73507794438244
+		- Maksymalny czas zmiany wątku | przebywania w wątku: 6618 | 65940
+		- Minimalny czas zmiany wątku | przebywania w wątku: 6160 | 65550
 Test wywłaszczenia wątków (piorytety):
 	- test 3 wątków p. wysoki i 3 p. niski po 4 pomiary:
+		- Średni czas zmiany wątku | przebywania w wątku: 7567.363636363636 | 64569.27272727273
+		- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: 3378.9925456231217 | 3334.5131747459195
+		- Maksymalny czas zmiany wątku | przebywania w wątku: 17320 | 67230
+		- Minimalny czas zmiany wątku | przebywania w wątku: 4808 | 54950
+	- test 5 wątków p. wysoki i 5 p. niski po 6 pomiarów:
+		- Średni czas zmiany wątku | przebywania w wątku: 7995.172413793103 | 64141.06896551724
+		- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: 6525.943260819556 | 6473.290399144128
+		- Maksymalny czas zmiany wątku | przebywania w wątku: 37184 | 67020
+		- Minimalny czas zmiany wątku | przebywania w wątku: 4994 | 35140
