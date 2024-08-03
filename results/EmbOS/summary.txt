@@ -14,3 +14,14 @@ Test wywłaszczenia wątków:
 		- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: 126.46918058052898 | 2285.709363065151
 		- Maksymalny czas zmiany wątku | przebywania w wątku: 1356 | 359258
 		- Minimalny czas zmiany wątku | przebywania w wątku: 734 | 287216
+Test wywłaszczenia wątków (piorytety):
+	- test 3 wątków p. wysoki i 3 p. niski po 4 pomiary:
+		- Średni czas zmiany wątku | przebywania w wątku: 1137.909090909091 | 358862.0909090909
+		- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: 888.3024961550681 | 890.7974976492591
+		- Maksymalny czas zmiany wątku | przebywania w wątku: 2700 | 359448
+		- Minimalny czas zmiany wątku | przebywania w wątku: 552 | 357300
+	- test 5 wątków p. wysoki i 5 p. niski po 6 pomiarów:
+		- Średni czas zmiany wątku | przebywania w wątku: 1569.3793103448277 | 358430.6206896552
+		- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: 1503.6820402468466 | 1502.6859791204315
+		- Maksymalny czas zmiany wątku | przebywania w wątku: 4158 | 359420
+		- Minimalny czas zmiany wątku | przebywania w wątku: 568 | 355854
