@@ -265,8 +265,9 @@ class App(ctk.CTk):
     def start_tests(self):
 
         with open(f"./results/{self.system_string}/summary.txt", "a") as summary_file:
-            # switch_times_global = []
-            # in_task_times_global = []
+            switch_times_global = []
+            in_task_times_global = []
+
             # # TASK SWITCH
             # summary_file.write("Test wywłaszczenia wątków:\n")
             # # 5_5 part
@@ -639,26 +640,196 @@ class App(ctk.CTk):
             # summary_file.write(
             #     f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
 
-            switch_times_global = []
-            in_task_times_global = []
+            # switch_times_global = []
+            # in_task_times_global = []
+
+            # # FORCE TASK SWITCH
+            # summary_file.write("Test wymuszonej zmiany wątków:\n")
+
+            # # 5_50 part
+            # summary_file.write(
+            #     "\t- test 5 wątków po 50 pomiarów:\n")
+            # self.task_force_switch_input.delete(0, ctk.END)
+            # self.task_force_switch_input.insert(0, "5; 50")
+            # for i in range(2):
+            #     task_times = []
+            #     switch_times = []
+            #     self.test_string = f"5_50_{i}"
+            #     if (self.task_force_switch_command() != 0):
+            #         return False
+            #     # System analyzed
+            #     for j in range(5):
+            #         filename = f"./results/{self.system_string}/task_force_switch/{self.test_string}/raw/{j}.txt"
+            #         # Read task times from file
+            #         with open(filename, "r") as file:
+            #             for line in file:
+            #                 task_times.append(int(line.strip()))
+            #     time.sleep(3)
+
+            #     task_times.sort()
+
+            #     with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/sorted_times.txt", "w") as file:
+            #         for timex in task_times:
+            #             file.write(f"{timex}\n")
+
+            #     for j in range(len(task_times)-1):
+            #         switch_times.append(
+            #             task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
+            #         switch_times_global.append(
+            #             task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
+
+            #     with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/switch_times.txt", "w") as file:
+            #         for timex in switch_times:
+            #             file.write(f"{timex}\n")
+
+            # mean_switch_time = statistics.mean(
+            #     switch_times_global) if switch_times_global else 0
+            # stdev_switch_time = statistics.stdev(
+            #     switch_times_global) if len(switch_times_global) > 1 else 0
+            # max_switch_time = max(
+            #     switch_times_global) if switch_times_global else 0
+            # min_switch_time = min(
+            #     switch_times_global) if switch_times_global else 0
+
+            # summary_file.write(
+            #     f"\t\t- Średni czas zmiany wątku: {mean_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Odchylenie standardowe czasu zmiany wątku: {stdev_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Maksymalny czas zmiany wątku: {max_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Minimalny czas zmiany wątku: {min_switch_time}\n")
+
+            # switch_times_global = []
+
+            # # 10_50 part
+            # summary_file.write(
+            #     "\t- test 10 wątków po 50 pomiarów:\n")
+            # self.task_force_switch_input.delete(0, ctk.END)
+            # self.task_force_switch_input.insert(0, "10; 50")
+            # for i in range(2):
+            #     task_times = []
+            #     switch_times = []
+            #     self.test_string = f"10_50_{i}"
+            #     if (self.task_force_switch_command() != 0):
+            #         return False
+            #     # System analyzed
+            #     for j in range(10):
+            #         filename = f"./results/{self.system_string}/task_force_switch/{self.test_string}/raw/{j}.txt"
+            #         # Read task times from file
+            #         with open(filename, "r") as file:
+            #             for line in file:
+            #                 task_times.append(int(line.strip()))
+            #     time.sleep(3)
+
+            #     task_times.sort()
+
+            #     with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/sorted_times.txt", "w") as file:
+            #         for timex in task_times:
+            #             file.write(f"{timex}\n")
+
+            #     for j in range(len(task_times)-1):
+            #         switch_times.append(
+            #             task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
+            #         switch_times_global.append(
+            #             task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
+
+            #     with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/switch_times.txt", "w") as file:
+            #         for timex in switch_times:
+            #             file.write(f"{timex}\n")
+
+            # mean_switch_time = statistics.mean(
+            #     switch_times_global) if switch_times_global else 0
+            # stdev_switch_time = statistics.stdev(
+            #     switch_times_global) if len(switch_times_global) > 1 else 0
+            # max_switch_time = max(
+            #     switch_times_global) if switch_times_global else 0
+            # min_switch_time = min(
+            #     switch_times_global) if switch_times_global else 0
+
+            # summary_file.write(
+            #     f"\t\t- Średni czas zmiany wątku: {mean_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Odchylenie standardowe czasu zmiany wątku: {stdev_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Maksymalny czas zmiany wątku: {max_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Minimalny czas zmiany wątku: {min_switch_time}\n")
+
+            # switch_times_global = []
+
+            # # 20_50 part
+            # summary_file.write(
+            #     "\t- test 20 wątków po 50 pomiarów:\n")
+            # self.task_force_switch_input.delete(0, ctk.END)
+            # self.task_force_switch_input.insert(0, "20; 50")
+            # for i in range(10):
+            #     task_times = []
+            #     switch_times = []
+            #     self.test_string = f"20_50_{i}"
+            #     if (self.task_force_switch_command() != 0):
+            #         return False
+            #     # System analyzed
+            #     for j in range(20):
+            #         filename = f"./results/{self.system_string}/task_force_switch/{self.test_string}/raw/{j}.txt"
+            #         # Read task times from file
+            #         with open(filename, "r") as file:
+            #             for line in file:
+            #                 task_times.append(int(line.strip()))
+            #     time.sleep(3)
+
+            #     task_times.sort()
+
+            #     with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/sorted_times.txt", "w") as file:
+            #         for timex in task_times:
+            #             file.write(f"{timex}\n")
+
+            #     for j in range(len(task_times)-1):
+            #         switch_times.append(
+            #             task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
+            #         switch_times_global.append(
+            #             task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
+
+            #     with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/switch_times.txt", "w") as file:
+            #         for timex in switch_times:
+            #             file.write(f"{timex}\n")
+
+            # mean_switch_time = statistics.mean(
+            #     switch_times_global) if switch_times_global else 0
+            # stdev_switch_time = statistics.stdev(
+            #     switch_times_global) if len(switch_times_global) > 1 else 0
+            # max_switch_time = max(
+            #     switch_times_global) if switch_times_global else 0
+            # min_switch_time = min(
+            #     switch_times_global) if switch_times_global else 0
+
+            # summary_file.write(
+            #     f"\t\t- Średni czas zmiany wątku: {mean_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Odchylenie standardowe czasu zmiany wątku: {stdev_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Maksymalny czas zmiany wątku: {max_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Minimalny czas zmiany wątku: {min_switch_time}\n")
+
+            # switch_times_global = []
 
             # FORCE TASK SWITCH
-            summary_file.write("Test wymuszonej zmiany wątków:\n")
-
-            # 5_50 part
+            summary_file.write("Test wymuszonej zmiany wątków (priorytety):\n")
+            # 3_3_4 part
             summary_file.write(
-                "\t- test 5 wątków po 50 pomiarów:\n")
-            self.task_force_switch_input.delete(0, ctk.END)
-            self.task_force_switch_input.insert(0, "5; 50")
+                "\t- test 3 wątków niski p. i 3 wysoki p. po 4 pomiary:\n")
+            self.task_force_switch_priority_input.delete(0, ctk.END)
+            self.task_force_switch_priority_input.insert(0, "3; 3; 4")
             for i in range(2):
                 task_times = []
                 switch_times = []
-                self.test_string = f"5_50_{i}"
-                if (self.task_force_switch_command() != 0):
+                self.test_string = f"3_3_4_{i}"
+                if (self.task_force_switch_priority_command() != 0):
                     return False
                 # System analyzed
-                for j in range(5):
-                    filename = f"./results/{self.system_string}/task_force_switch/{self.test_string}/raw/{j}.txt"
+                for j in range(6):
+                    filename = f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/raw/{j}.txt"
                     # Read task times from file
                     with open(filename, "r") as file:
                         for line in file:
@@ -667,7 +838,7 @@ class App(ctk.CTk):
 
                 task_times.sort()
 
-                with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/sorted_times.txt", "w") as file:
+                with open(f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/sorted_times.txt", "w") as file:
                     for timex in task_times:
                         file.write(f"{timex}\n")
 
@@ -677,7 +848,7 @@ class App(ctk.CTk):
                     switch_times_global.append(
                         task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
 
-                with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/switch_times.txt", "w") as file:
+                with open(f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/switch_times.txt", "w") as file:
                     for timex in switch_times:
                         file.write(f"{timex}\n")
 
@@ -700,22 +871,21 @@ class App(ctk.CTk):
                 f"\t\t- Minimalny czas zmiany wątku: {min_switch_time}\n")
 
             switch_times_global = []
-            in_task_times_global = []
 
-            # 10_50 part
+            # 5_5_50 part
             summary_file.write(
-                "\t- test 10 wątków po 50 pomiarów:\n")
-            self.task_force_switch_input.delete(0, ctk.END)
-            self.task_force_switch_input.insert(0, "10; 50")
+                "\t- test 5 wątków niski p. i 5 wysoki p. po 50 pomiarów:\n")
+            self.task_force_switch_priority_input.delete(0, ctk.END)
+            self.task_force_switch_priority_input.insert(0, "5; 5; 50")
             for i in range(2):
                 task_times = []
                 switch_times = []
-                self.test_string = f"10_50_{i}"
-                if (self.task_force_switch_command() != 0):
+                self.test_string = f"5_5_50_{i}"
+                if (self.task_force_switch_priority_command() != 0):
                     return False
                 # System analyzed
                 for j in range(10):
-                    filename = f"./results/{self.system_string}/task_force_switch/{self.test_string}/raw/{j}.txt"
+                    filename = f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/raw/{j}.txt"
                     # Read task times from file
                     with open(filename, "r") as file:
                         for line in file:
@@ -724,7 +894,7 @@ class App(ctk.CTk):
 
                 task_times.sort()
 
-                with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/sorted_times.txt", "w") as file:
+                with open(f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/sorted_times.txt", "w") as file:
                     for timex in task_times:
                         file.write(f"{timex}\n")
 
@@ -734,7 +904,7 @@ class App(ctk.CTk):
                     switch_times_global.append(
                         task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
 
-                with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/switch_times.txt", "w") as file:
+                with open(f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/switch_times.txt", "w") as file:
                     for timex in switch_times:
                         file.write(f"{timex}\n")
 
@@ -757,64 +927,6 @@ class App(ctk.CTk):
                 f"\t\t- Minimalny czas zmiany wątku: {min_switch_time}\n")
 
             switch_times_global = []
-            in_task_times_global = []
-
-            # 20_50 part
-            summary_file.write(
-                "\t- test 20 wątków po 50 pomiarów:\n")
-            self.task_force_switch_input.delete(0, ctk.END)
-            self.task_force_switch_input.insert(0, "20; 50")
-            for i in range(10):
-                task_times = []
-                switch_times = []
-                self.test_string = f"20_50_{i}"
-                if (self.task_force_switch_command() != 0):
-                    return False
-                # System analyzed
-                for j in range(20):
-                    filename = f"./results/{self.system_string}/task_force_switch/{self.test_string}/raw/{j}.txt"
-                    # Read task times from file
-                    with open(filename, "r") as file:
-                        for line in file:
-                            task_times.append(int(line.strip()))
-                time.sleep(3)
-
-                task_times.sort()
-
-                with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/sorted_times.txt", "w") as file:
-                    for timex in task_times:
-                        file.write(f"{timex}\n")
-
-                for j in range(len(task_times)-1):
-                    switch_times.append(
-                        task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
-                    switch_times_global.append(
-                        task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
-
-                with open(f"./results/{self.system_string}/task_force_switch/{self.test_string}/switch_times.txt", "w") as file:
-                    for timex in switch_times:
-                        file.write(f"{timex}\n")
-
-            mean_switch_time = statistics.mean(
-                switch_times_global) if switch_times_global else 0
-            stdev_switch_time = statistics.stdev(
-                switch_times_global) if len(switch_times_global) > 1 else 0
-            max_switch_time = max(
-                switch_times_global) if switch_times_global else 0
-            min_switch_time = min(
-                switch_times_global) if switch_times_global else 0
-
-            summary_file.write(
-                f"\t\t- Średni czas zmiany wątku: {mean_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Odchylenie standardowe czasu zmiany wątku: {stdev_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Maksymalny czas zmiany wątku: {max_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Minimalny czas zmiany wątku: {min_switch_time}\n")
-
-            switch_times_global = []
-            in_task_times_global = []
 
     def change_state(self, diode_state, button_state):
 

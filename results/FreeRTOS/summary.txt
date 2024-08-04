@@ -41,3 +41,14 @@ Test wymuszonej zmiany wątków:
 		- Odchylenie standardowe czasu zmiany wątku: 74.49318332547162
 		- Maksymalny czas zmiany wątku: 1066
 		- Minimalny czas zmiany wątku: 188
+Test wymuszonej zmiany wątków (priorytety):
+	- test 3 wątków niski p. i 3 wysoki p. po 4 pomiary:
+		- Średni czas zmiany wątku: 1132.4782608695652
+		- Odchylenie standardowe czasu zmiany wątku: 4093.830657840217
+		- Maksymalny czas zmiany wątku: 22380
+		- Minimalny czas zmiany wątku: 194
+	- test 5 wątków niski p. i 5 wysoki p. po 50 pomiarów:
+		- Średni czas zmiany wątku: 207.70541082164328
+		- Odchylenie standardowe czasu zmiany wątku: 109.13478177262847
+		- Maksymalny czas zmiany wątku: 2178
+		- Minimalny czas zmiany wątku: 188
