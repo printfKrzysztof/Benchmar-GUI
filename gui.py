@@ -928,136 +928,196 @@ class App(ctk.CTk):
 
             # switch_times_global = []
 
-            # FORCE TASK SWITCH
-            summary_file.write("Test dostępu do semaforów:\n")
-            # 5_10 part
+            # # SEMAPHORE
+            # summary_file.write("Test dostępu do semaforów:\n")
+            # # 5_10 part
+            # summary_file.write(
+            #     "\t- test 5 wątków po 10 pomiarów\n")
+            # self.semaphore_input.delete(0, ctk.END)
+            # self.semaphore_input.insert(0, "5; 10")
+            # for i in range(2):
+            #     task_times = []
+            #     switch_times = []
+            #     self.test_string = f"5_10_{i}"
+            #     if (self.semaphore_command() != 0):
+            #         return False
+            #     # System analyzed
+            #     for j in range(5):
+            #         filename = f"./results/{self.system_string}/semaphore/{self.test_string}/raw/{j}.txt"
+            #         # Read task times from file
+            #         with open(filename, "r") as file:
+            #             for line in file:
+            #                 task_times.append(int(line.strip()))
+            #     time.sleep(1)
+
+            #     task_times.sort()
+
+            #     with open(f"./results/{self.system_string}/semaphore/{self.test_string}/sorted_times.txt", "w") as file:
+            #         for timex in task_times:
+            #             file.write(f"{timex}\n")
+
+            #     for j in range(0, len(task_times), 2):
+            #         if j + 1 <= len(task_times):
+            #             switch_times.append(
+            #                 task_times[j+1] - task_times[j])
+            #             switch_times_global.append(
+            #                 task_times[j+1] - task_times[j])
+
+            #     with open(f"./results/{self.system_string}/semaphore/{self.test_string}/semaphore_times.txt", "w") as file:
+            #         for timex in switch_times:
+            #             file.write(f"{timex}\n")
+
+            # mean_switch_time = statistics.mean(
+            #     switch_times_global) if switch_times_global else 0
+            # stdev_switch_time = statistics.stdev(
+            #     switch_times_global) if len(switch_times_global) > 1 else 0
+            # max_switch_time = max(
+            #     switch_times_global) if switch_times_global else 0
+            # min_switch_time = min(
+            #     switch_times_global) if switch_times_global else 0
+
+            # summary_file.write(
+            #     f"\t\t- Średni czas oczekiwania na otworzenie semaforów: {mean_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Odchylenie standardowe: {stdev_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Maksymalny czas: {max_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Minimalny czas: {min_switch_time}\n")
+
+            # switch_times_global = []
+
+            # # 10_10 part
+            # summary_file.write(
+            #     "\t- test 10 wątków po 10 pomiarów\n")
+            # self.semaphore_input.delete(0, ctk.END)
+            # self.semaphore_input.insert(0, "10; 10")
+            # for i in range(2):
+            #     task_times = []
+            #     switch_times = []
+            #     self.test_string = f"10_10_{i}"
+            #     if (self.semaphore_command() != 0):
+            #         return False
+            #     # System analyzed
+            #     for j in range(10):
+            #         filename = f"./results/{self.system_string}/semaphore/{self.test_string}/raw/{j}.txt"
+            #         # Read task times from file
+            #         with open(filename, "r") as file:
+            #             for line in file:
+            #                 task_times.append(int(line.strip()))
+            #     time.sleep(1)
+
+            #     task_times.sort()
+
+            #     with open(f"./results/{self.system_string}/semaphore/{self.test_string}/sorted_times.txt", "w") as file:
+            #         for timex in task_times:
+            #             file.write(f"{timex}\n")
+
+            #     for j in range(0, len(task_times), 2):
+            #         if j + 1 <= len(task_times):
+            #             switch_times.append(
+            #                 task_times[j+1] - task_times[j])
+            #             switch_times_global.append(
+            #                 task_times[j+1] - task_times[j])
+
+            #     with open(f"./results/{self.system_string}/semaphore/{self.test_string}/semaphore_times.txt", "w") as file:
+            #         for timex in switch_times:
+            #             file.write(f"{timex}\n")
+
+            # mean_switch_time = statistics.mean(
+            #     switch_times_global) if switch_times_global else 0
+            # stdev_switch_time = statistics.stdev(
+            #     switch_times_global) if len(switch_times_global) > 1 else 0
+            # max_switch_time = max(
+            #     switch_times_global) if switch_times_global else 0
+            # min_switch_time = min(
+            #     switch_times_global) if switch_times_global else 0
+
+            # summary_file.write(
+            #     f"\t\t- Średni czas oczekiwania na semafor: {mean_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Odchylenie standardowe: {stdev_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Maksymalny czas: {max_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Minimalny czas: {min_switch_time}\n")
+
+            # switch_times_global = []
+
+            # # 20_50 part
+            # summary_file.write(
+            #     "\t- test 20 wątków po 50 pomiarów\n")
+            # self.semaphore_input.delete(0, ctk.END)
+            # self.semaphore_input.insert(0, "20; 50")
+            # for i in range(10):
+            #     task_times = []
+            #     switch_times = []
+            #     self.test_string = f"20_50_{i}"
+            #     if (self.semaphore_command() != 0):
+            #         return False
+            #     # System analyzed
+            #     for j in range(20):
+            #         filename = f"./results/{self.system_string}/semaphore/{self.test_string}/raw/{j}.txt"
+            #         # Read task times from file
+            #         with open(filename, "r") as file:
+            #             for line in file:
+            #                 task_times.append(int(line.strip()))
+            #     time.sleep(1)
+
+            #     task_times.sort()
+
+            #     with open(f"./results/{self.system_string}/semaphore/{self.test_string}/sorted_times.txt", "w") as file:
+            #         for timex in task_times:
+            #             file.write(f"{timex}\n")
+
+            #     for j in range(0, len(task_times), 2):
+            #         if j + 1 <= len(task_times):
+            #             switch_times.append(
+            #                 task_times[j+1] - task_times[j])
+            #             switch_times_global.append(
+            #                 task_times[j+1] - task_times[j])
+
+            #     with open(f"./results/{self.system_string}/semaphore/{self.test_string}/semaphore_times.txt", "w") as file:
+            #         for timex in switch_times:
+            #             file.write(f"{timex}\n")
+
+            # mean_switch_time = statistics.mean(
+            #     switch_times_global) if switch_times_global else 0
+            # stdev_switch_time = statistics.stdev(
+            #     switch_times_global) if len(switch_times_global) > 1 else 0
+            # max_switch_time = max(
+            #     switch_times_global) if switch_times_global else 0
+            # min_switch_time = min(
+            #     switch_times_global) if switch_times_global else 0
+
+            # summary_file.write(
+            #     f"\t\t- Średni czas oczekiwania na semafor: {mean_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Odchylenie standardowe: {stdev_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Maksymalny czas: {max_switch_time}\n")
+            # summary_file.write(
+            #     f"\t\t- Minimalny czas: {min_switch_time}\n")
+
+            # switch_times_global = []
+
+            # QUEUE
             summary_file.write(
-                "\t- test 5 wątków po 10 pomiarów\n")
-            self.semaphore_input.delete(0, ctk.END)
-            self.semaphore_input.insert(0, "5; 10")
-            for i in range(2):
-                task_times = []
-                switch_times = []
-                self.test_string = f"5_10_{i}"
-                if (self.semaphore_command() != 0):
-                    return False
-                # System analyzed
-                for j in range(5):
-                    filename = f"./results/{self.system_string}/semaphore/{self.test_string}/raw/{j}.txt"
-                    # Read task times from file
-                    with open(filename, "r") as file:
-                        for line in file:
-                            task_times.append(int(line.strip()))
-                time.sleep(1)
-
-                task_times.sort()
-
-                with open(f"./results/{self.system_string}/semaphore/{self.test_string}/sorted_times.txt", "w") as file:
-                    for timex in task_times:
-                        file.write(f"{timex}\n")
-
-                for j in range(0, len(task_times), 2):
-                    if j + 1 <= len(task_times):
-                        switch_times.append(
-                            task_times[j+1] - task_times[j])
-                        switch_times_global.append(
-                            task_times[j+1] - task_times[j])
-
-                with open(f"./results/{self.system_string}/semaphore/{self.test_string}/semaphore_times.txt", "w") as file:
-                    for timex in switch_times:
-                        file.write(f"{timex}\n")
-
-            mean_switch_time = statistics.mean(
-                switch_times_global) if switch_times_global else 0
-            stdev_switch_time = statistics.stdev(
-                switch_times_global) if len(switch_times_global) > 1 else 0
-            max_switch_time = max(
-                switch_times_global) if switch_times_global else 0
-            min_switch_time = min(
-                switch_times_global) if switch_times_global else 0
-
+                "Test dostępu (zapis -> zmiana -> odczyt) do kolejki:\n")
+            # 50 part
             summary_file.write(
-                f"\t\t- Średni czas oczekiwania na otworzenie semaforów: {mean_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Odchylenie standardowe: {stdev_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Maksymalny czas: {max_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Minimalny czas: {min_switch_time}\n")
-
-            switch_times_global = []
-
-            # 10_10 part
-            summary_file.write(
-                "\t- test 10 wątków po 10 pomiarów\n")
-            self.semaphore_input.delete(0, ctk.END)
-            self.semaphore_input.insert(0, "10; 10")
-            for i in range(2):
-                task_times = []
-                switch_times = []
-                self.test_string = f"10_10_{i}"
-                if (self.semaphore_command() != 0):
-                    return False
-                # System analyzed
-                for j in range(10):
-                    filename = f"./results/{self.system_string}/semaphore/{self.test_string}/raw/{j}.txt"
-                    # Read task times from file
-                    with open(filename, "r") as file:
-                        for line in file:
-                            task_times.append(int(line.strip()))
-                time.sleep(1)
-
-                task_times.sort()
-
-                with open(f"./results/{self.system_string}/semaphore/{self.test_string}/sorted_times.txt", "w") as file:
-                    for timex in task_times:
-                        file.write(f"{timex}\n")
-
-                for j in range(0, len(task_times), 2):
-                    if j + 1 <= len(task_times):
-                        switch_times.append(
-                            task_times[j+1] - task_times[j])
-                        switch_times_global.append(
-                            task_times[j+1] - task_times[j])
-
-                with open(f"./results/{self.system_string}/semaphore/{self.test_string}/semaphore_times.txt", "w") as file:
-                    for timex in switch_times:
-                        file.write(f"{timex}\n")
-
-            mean_switch_time = statistics.mean(
-                switch_times_global) if switch_times_global else 0
-            stdev_switch_time = statistics.stdev(
-                switch_times_global) if len(switch_times_global) > 1 else 0
-            max_switch_time = max(
-                switch_times_global) if switch_times_global else 0
-            min_switch_time = min(
-                switch_times_global) if switch_times_global else 0
-
-            summary_file.write(
-                f"\t\t- Średni czas oczekiwania na semafor: {mean_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Odchylenie standardowe: {stdev_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Maksymalny czas: {max_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Minimalny czas: {min_switch_time}\n")
-
-            switch_times_global = []
-
-            # 20_50 part
-            summary_file.write(
-                "\t- test 20 wątków po 50 pomiarów\n")
-            self.semaphore_input.delete(0, ctk.END)
-            self.semaphore_input.insert(0, "20; 50")
+                "\t- test 50 pomiarów \n")
+            self.queue_input.delete(0, ctk.END)
+            self.queue_input.insert(0, "50")
             for i in range(10):
                 task_times = []
                 switch_times = []
-                self.test_string = f"20_50_{i}"
-                if (self.semaphore_command() != 0):
+                self.test_string = f"50_{i}"
+                if (self.queue_command() != 0):
                     return False
                 # System analyzed
-                for j in range(20):
-                    filename = f"./results/{self.system_string}/semaphore/{self.test_string}/raw/{j}.txt"
+                for j in range(2):
+                    filename = f"./results/{self.system_string}/queue/{self.test_string}/raw/{j}.txt"
                     # Read task times from file
                     with open(filename, "r") as file:
                         for line in file:
@@ -1066,7 +1126,7 @@ class App(ctk.CTk):
 
                 task_times.sort()
 
-                with open(f"./results/{self.system_string}/semaphore/{self.test_string}/sorted_times.txt", "w") as file:
+                with open(f"./results/{self.system_string}/queue/{self.test_string}/sorted_times.txt", "w") as file:
                     for timex in task_times:
                         file.write(f"{timex}\n")
 
@@ -1077,7 +1137,7 @@ class App(ctk.CTk):
                         switch_times_global.append(
                             task_times[j+1] - task_times[j])
 
-                with open(f"./results/{self.system_string}/semaphore/{self.test_string}/semaphore_times.txt", "w") as file:
+                with open(f"./results/{self.system_string}/queue/{self.test_string}/queue_times.txt", "w") as file:
                     for timex in switch_times:
                         file.write(f"{timex}\n")
 
@@ -1091,7 +1151,7 @@ class App(ctk.CTk):
                 switch_times_global) if switch_times_global else 0
 
             summary_file.write(
-                f"\t\t- Średni czas oczekiwania na semafor: {mean_switch_time}\n")
+                f"\t\t- Średni czas sekwencji dostępu do kolejki: {mean_switch_time}\n")
             summary_file.write(
                 f"\t\t- Odchylenie standardowe: {stdev_switch_time}\n")
             summary_file.write(
@@ -1760,7 +1820,7 @@ class App(ctk.CTk):
                 for i in range(2):
                     print([hex(byte) for byte in scores[i]])
                     with open(f"{fpath}/us/{i}.txt", "w") as file:
-                        with open(f"{fpath}raw/{i}.txt", "w") as file_raw:
+                        with open(f"{fpath}/raw/{i}.txt", "w") as file_raw:
                             command_anw = 0
                             arg_count_anw = 0
                             args_anw = []

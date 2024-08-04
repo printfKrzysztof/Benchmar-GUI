@@ -68,3 +68,9 @@ Test dostępu do semaforów:
 		- Odchylenie standardowe: 1161.8244813580304
 		- Maksymalny czas: 27888
 		- Minimalny czas: 660
+Test dostępu (zapis -> zmiana -> odczyt) do kolejki:
+	- test 50 pomiarów 
+		- Średni czas sekwencji dostępu do kolejki: 886.044
+		- Odchylenie standardowe: 141.1431359778694
+		- Maksymalny czas: 2562
+		- Minimalny czas: 206
