@@ -52,3 +52,19 @@ Test wymuszonej zmiany wątków (priorytety):
 		- Odchylenie standardowe czasu zmiany wątku: 1025.0374949802472
 		- Maksymalny czas zmiany wątku: 25006
 		- Minimalny czas zmiany wątku: 1538
+Test dostępu do semaforów:
+	- test 5 wątków po 10 pomiarów
+		- Średni czas oczekiwania na otworzenie semaforów: 6918.68
+		- Odchylenie standardowe: 1814.778993009724
+		- Maksymalny czas: 15660
+		- Minimalny czas: 6458
+	- test 10 wątków po 10 pomiarów
+		- Średni czas oczekiwania na semafor: 7157
+		- Odchylenie standardowe: 3439.3047042221842
+		- Maksymalny czas: 31068
+		- Minimalny czas: 6548
+	- test 20 wątków po 50 pomiarów
+		- Średni czas oczekiwania na semafor: 6879.9044
+		- Odchylenie standardowe: 2567.5708480337157
+		- Maksymalny czas: 64190
+		- Minimalny czas: 6736
