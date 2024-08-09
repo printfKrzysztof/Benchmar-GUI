@@ -1111,8 +1111,9 @@ class App(ctk.CTk):
                 "\t- test 50 pomiarów:\n")
             self.queue_input.delete(0, ctk.END)
             self.queue_input.insert(0, "50")
+            errors = 0
             for i in range(10):
-                task_times = []
+                task_times = [[] for _ in range(2)]
                 switch_times = []
                 self.test_string = f"50_{i}"
                 if (self.queue_command() != 0):
@@ -1123,21 +1124,19 @@ class App(ctk.CTk):
                     # Read task times from file
                     with open(filename, "r") as file:
                         for line in file:
-                            task_times.append(int(line.strip()))
+                            task_times[j].append(int(line.strip()))
                 time.sleep(1)
 
-                task_times.sort()
+                # Read errors from file
+                with open(f"./results/{self.system_string}/queue/{self.test_string}/errors.txt", "r") as file:
+                    for line in file:
+                        errors = errors + (int(line.strip()))
 
-                with open(f"./results/{self.system_string}/queue/{self.test_string}/sorted_times.txt", "w") as file:
-                    for timex in task_times:
-                        file.write(f"{timex}\n")
-
-                for j in range(0, len(task_times), 2):
-                    if j + 1 <= len(task_times):
-                        switch_times.append(
-                            task_times[j+1] - task_times[j])
-                        switch_times_global.append(
-                            task_times[j+1] - task_times[j])
+                for j in range(0, len(task_times[0])):
+                    switch_times.append(
+                        task_times[1][j] - task_times[0][j])
+                    switch_times_global.append(
+                        task_times[1][j] - task_times[0][j])
 
                 with open(f"./results/{self.system_string}/queue/{self.test_string}/queue_times.txt", "w") as file:
                     for timex in switch_times:
@@ -1160,6 +1159,8 @@ class App(ctk.CTk):
                 f"\t\t- Maksymalny czas: {max_switch_time}\n")
             summary_file.write(
                 f"\t\t- Minimalny czas: {min_switch_time}\n")
+            summary_file.write(
+                f"\t\t- Liczba błędów dostępu: {errors}\n")
 
             switch_times_global = []
 
@@ -1815,10 +1816,10 @@ class App(ctk.CTk):
             self.ser.flush()
             self.ser.write(buffor_tx)
             # time.sleep(10)
-            response = self.ser.read(406 * 2)
+            response = self.ser.read(406 * 4)
             print(len(response))
-            if len(response) == 406 * 2:
-                scores = [response[i * 406: (i + 1) * 406] for i in range(2)]
+            if len(response) == 406 * 4:
+                scores = [response[i * 406: (i + 1) * 406] for i in range(4)]
                 for i in range(2):
                     print([hex(byte) for byte in scores[i]])
                     with open(f"{fpath}/us/{i}.txt", "w") as file:
@@ -1842,6 +1843,22 @@ class App(ctk.CTk):
                                 self.change_state(False, True)
                                 self.queue_label.configure(text="Err")
                                 error = -1
+                with open(f"{fpath}/errors.txt", "w") as file:
+                    for i in range(2, 4):
+                        print([hex(byte) for byte in scores[i]])
+                        command_anw = 0
+                        arg_count_anw = 0
+                        args_anw = []
+                        result, command_anw, arg_count_anw = decode_command_frame(
+                            scores[i], args_anw)
+                        if result == 0 and command_anw == command:
+                            file.write(
+                                f"{args_anw[0]}\n")
+                            self.queue_label.configure(text="OK")
+                        else:
+                            self.change_state(False, True)
+                            self.queue_label.configure(text="Err")
+                            error = -1
             else:
                 print("Board didn't send full responce to frame. Maybe resend?")
                 self.change_state(False, True)
