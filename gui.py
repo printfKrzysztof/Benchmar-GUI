@@ -22,7 +22,7 @@ MAX_ARGS = 4
 MAX_SCORES = 400
 
 # Values measured from a bear metal program!
-TASK_SWITCH_TICKS = 14
+TASK_SWITCH_TICKS = 12
 TASK_SWITCH_TIME = float("{:.9f}".format(TASK_SWITCH_TICKS / 72.000))
 MEASSURE_TICKS = 6
 MEASSURE_TIME = float("{:.9f}".format(MEASSURE_TICKS / 72.000))  # Time in us
@@ -197,22 +197,6 @@ class App(ctk.CTk):
             self.frame, command=self.task_force_switch_analyze, text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
         self.task_force_switch_score.grid(row=3, column=3, pady=5, padx=10)
 
-        self.task_force_switch_priority_input = ctk.CTkEntry(
-            self.frame, placeholder_text="L. w. niski; L. w. wysoki ; L. testów", width=input_width)
-        self.task_force_switch_priority_input.grid(
-            row=4, column=0, pady=5, padx=10)
-        self.task_force_switch_priority_button = ctk.CTkButton(
-            self.frame, text="Test wymuszonej zmiany wątków (różne piorytety)", command=self.task_force_switch_priority_command, width=button_width, fg_color="darkorchid4")
-        self.task_force_switch_priority_button.grid(row=4, column=1, pady=5)
-        self.task_force_switch_priority_label = ctk.CTkLabel(
-            self.frame, text="    -----    ")
-        self.task_force_switch_priority_label.grid(
-            row=4, column=2, pady=5, padx=10)
-        self.task_force_switch_priority_score = ctk.CTkButton(
-            self.frame, command=self.task_force_switch_priority_analyze, text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
-        self.task_force_switch_priority_score.grid(
-            row=4, column=3, pady=5, padx=10)
-
         self.task_switch_input = ctk.CTkEntry(
             self.frame, placeholder_text="L. wątków; L. testów", width=input_width)
         self.task_switch_input.grid(row=5, column=0, pady=5, padx=10)
@@ -224,19 +208,6 @@ class App(ctk.CTk):
         self.task_switch_score = ctk.CTkButton(self.frame, command=self.task_switch_analyze,
                                                text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
         self.task_switch_score.grid(row=5, column=3, pady=5, padx=10)
-
-        self.task_switch_priority_input = ctk.CTkEntry(
-            self.frame, placeholder_text="L. w. niski; L. w. wysoki ; L. testów", width=input_width)
-        self.task_switch_priority_input.grid(row=6, column=0, pady=5, padx=10)
-        self.task_switch_priority_button = ctk.CTkButton(
-            self.frame, text="Test wywłaszczenia wątków (różne piorytety)", command=self.task_switch_priority_command, width=button_width, fg_color="chocolate1")
-        self.task_switch_priority_button.grid(row=6, column=1, pady=5)
-        self.task_switch_priority_label = ctk.CTkLabel(
-            self.frame, text="    -----    ")
-        self.task_switch_priority_label.grid(row=6, column=2, pady=5, padx=10)
-        self.task_switch_priority_score = ctk.CTkButton(
-            self.frame, command=self.task_switch_priority_analyze, text="Wyniki", width=score_button_wdith, fg_color="azure2", text_color="dimgray")
-        self.task_switch_priority_score.grid(row=6, column=3, pady=5, padx=10)
 
         self.semaphore_input = ctk.CTkEntry(
             self.frame, placeholder_text="L. wątków; L. testów", width=input_width)
@@ -588,159 +559,6 @@ class App(ctk.CTk):
             switch_times_global = []
             in_task_times_global = []
 
-            # # TASK SWITCH PRIORITY
-            # summary_file.write("Test wywłaszczenia wątków (piorytety):\n")
-
-            # # 3_3_4 part
-            # summary_file.write(
-            #     "\t- test 3 wątków p. wysoki i 3 p. niski po 4 pomiary:\n")
-            # self.task_switch_priority_input.delete(0, ctk.END)
-            # self.task_switch_priority_input.insert(0, "3; 3; 4")
-            # for i in range(2):
-            #     task_times = []
-            #     switch_times = []
-            #     in_task_times = []
-            #     self.test_string = f"3_3_4_{i}"
-            #     if (self.task_switch_priority_command() != 0):
-            #         return False
-            #     # System analyzed
-            #     for j in range(6):
-            #         filename = f"./results/{self.system_string}/task_switch_priority/{self.test_string}/raw/{j}.txt"
-            #         # Read task times from file
-            #         with open(filename, "r") as file:
-            #             for line in file:
-            #                 task_times.append(int(line.strip()))
-            #     time.sleep(1)
-
-            #     task_times.sort()
-
-            #     with open(f"./results/{self.system_string}/task_switch_priority/{self.test_string}/sorted_times.txt", "w") as file:
-            #         for timex in task_times:
-            #             file.write(f"{timex}\n")
-
-            #     for j in range(1, len(task_times), 2):
-            #         if j + 2 < len(task_times):
-            #             switch_times.append(task_times[j+1] - task_times[j])
-            #             switch_times_global.append(
-            #                 task_times[j+1] - task_times[j])
-            #             in_task_times.append(task_times[j+2] - task_times[j+1])
-            #             in_task_times_global.append(
-            #                 task_times[j+2] - task_times[j+1])
-
-            #     with open(f"./results/{self.system_string}/task_switch_priority/{self.test_string}/switch_times.txt", "w") as file:
-            #         for timex in switch_times:
-            #             file.write(f"{timex}\n")
-
-            #     with open(f"./results/{self.system_string}/task_switch_priority/{self.test_string}/in_task_times.txt", "w") as file:
-            #         for timex in in_task_times:
-            #             file.write(f"{timex}\n")
-
-            # mean_switch_time = statistics.mean(
-            #     switch_times_global) if switch_times_global else 0
-            # stdev_switch_time = statistics.stdev(
-            #     switch_times_global) if len(switch_times_global) > 1 else 0
-            # max_switch_time = max(
-            #     switch_times_global) if switch_times_global else 0
-            # min_switch_time = min(
-            #     switch_times_global) if switch_times_global else 0
-
-            # # Calculating statistics for in_task_times_global
-            # mean_in_task_time = statistics.mean(
-            #     in_task_times_global) if in_task_times_global else 0
-            # stdev_in_task_time = statistics.stdev(
-            #     in_task_times_global) if len(in_task_times_global) > 1 else 0
-            # max_in_task_time = max(
-            #     in_task_times_global) if in_task_times_global else 0
-            # min_in_task_time = min(
-            #     in_task_times_global) if in_task_times_global else 0
-
-            # summary_file.write(
-            #     f"\t\t- Średni czas zmiany wątku | przebywania w wątku: {mean_switch_time} | {mean_in_task_time}\n")
-            # summary_file.write(
-            #     f"\t\t- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: {stdev_switch_time} | {stdev_in_task_time}\n")
-            # summary_file.write(
-            #     f"\t\t- Maksymalny czas zmiany wątku | przebywania w wątku: {max_switch_time} | {max_in_task_time}\n")
-            # summary_file.write(
-            #     f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
-
-            # switch_times_global = []
-            # in_task_times_global = []
-
-            # # 5_5_6 part
-            # summary_file.write(
-            #     "\t- test 5 wątków p. wysoki i 5 p. niski po 6 pomiarów:\n")
-            # self.task_switch_priority_input.delete(0, ctk.END)
-            # self.task_switch_priority_input.insert(0, "5; 5; 6")
-            # for i in range(2):
-            #     task_times = []
-            #     switch_times = []
-            #     in_task_times = []
-            #     self.test_string = f"5_5_6_{i}"
-            #     if (self.task_switch_priority_command() != 0):
-            #         return False
-            #     # System analyzed
-            #     for j in range(10):
-            #         filename = f"./results/{self.system_string}/task_switch_priority/{self.test_string}/raw/{j}.txt"
-            #         # Read task times from file
-            #         with open(filename, "r") as file:
-            #             for line in file:
-            #                 task_times.append(int(line.strip()))
-            #     time.sleep(1)
-
-            #     task_times.sort()
-
-            #     with open(f"./results/{self.system_string}/task_switch_priority/{self.test_string}/sorted_times.txt", "w") as file:
-            #         for timex in task_times:
-            #             file.write(f"{timex}\n")
-
-            #     for j in range(1, len(task_times), 2):
-            #         if j + 2 < len(task_times):
-            #             switch_times.append(task_times[j+1] - task_times[j])
-            #             switch_times_global.append(
-            #                 task_times[j+1] - task_times[j])
-            #             in_task_times.append(task_times[j+2] - task_times[j+1])
-            #             in_task_times_global.append(
-            #                 task_times[j+2] - task_times[j+1])
-
-            #     with open(f"./results/{self.system_string}/task_switch_priority/{self.test_string}/switch_times.txt", "w") as file:
-            #         for timex in switch_times:
-            #             file.write(f"{timex}\n")
-
-            #     with open(f"./results/{self.system_string}/task_switch_priority/{self.test_string}/in_task_times.txt", "w") as file:
-            #         for timex in in_task_times:
-            #             file.write(f"{timex}\n")
-
-            # mean_switch_time = statistics.mean(
-            #     switch_times_global) if switch_times_global else 0
-            # stdev_switch_time = statistics.stdev(
-            #     switch_times_global) if len(switch_times_global) > 1 else 0
-            # max_switch_time = max(
-            #     switch_times_global) if switch_times_global else 0
-            # min_switch_time = min(
-            #     switch_times_global) if switch_times_global else 0
-
-            # # Calculating statistics for in_task_times_global
-            # mean_in_task_time = statistics.mean(
-            #     in_task_times_global) if in_task_times_global else 0
-            # stdev_in_task_time = statistics.stdev(
-            #     in_task_times_global) if len(in_task_times_global) > 1 else 0
-            # max_in_task_time = max(
-            #     in_task_times_global) if in_task_times_global else 0
-            # min_in_task_time = min(
-            #     in_task_times_global) if in_task_times_global else 0
-
-            # summary_file.write(
-            #     f"\t\t- Średni czas zmiany wątku | przebywania w wątku: {mean_switch_time} | {mean_in_task_time}\n")
-            # summary_file.write(
-            #     f"\t\t- Odchylenie standardowe czasu zmiany wątku | przebywania w wątku: {stdev_switch_time} | {stdev_in_task_time}\n")
-            # summary_file.write(
-            #     f"\t\t- Maksymalny czas zmiany wątku | przebywania w wątku: {max_switch_time} | {max_in_task_time}\n")
-            # summary_file.write(
-            #     f"\t\t- Minimalny czas zmiany wątku | przebywania w wątku: {min_switch_time} | {min_in_task_time}\n")
-
-            # switch_times_global = []
-            # in_task_times_global = []
-
             # FORCE TASK SWITCH
             summary_file.write("Test wymuszonej zmiany wątków:\n")
 
@@ -927,120 +745,6 @@ class App(ctk.CTk):
                     for timex in switch_times:
                         file.write(f"{timex}\n")
                         switch_times_global.append(timex)
-
-            mean_switch_time = statistics.mean(
-                switch_times_global) if switch_times_global else 0
-            stdev_switch_time = statistics.stdev(
-                switch_times_global) if len(switch_times_global) > 1 else 0
-            max_switch_time = max(
-                switch_times_global) if switch_times_global else 0
-            min_switch_time = min(
-                switch_times_global) if switch_times_global else 0
-
-            summary_file.write(
-                f"\t\t- Średni czas zmiany wątku: {mean_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Odchylenie standardowe czasu zmiany wątku: {stdev_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Maksymalny czas zmiany wątku: {max_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Minimalny czas zmiany wątku: {min_switch_time}\n")
-
-            switch_times_global = []
-
-            # FORCE TASK SWITCH PRIORITY
-            summary_file.write("Test wymuszonej zmiany wątków (priorytety):\n")
-            # 3_3_4 part
-            summary_file.write(
-                "\t- test 3 wątków niski p. i 3 wysoki p. po 4 pomiary:\n")
-            self.task_force_switch_priority_input.delete(0, ctk.END)
-            self.task_force_switch_priority_input.insert(0, "3; 3; 4")
-            for i in range(2):
-                task_times = []
-                switch_times = []
-                self.test_string = f"3_3_4_{i}"
-                if (self.task_force_switch_priority_command() != 0):
-                    return False
-                # System analyzed
-                for j in range(6):
-                    filename = f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/raw/{j}.txt"
-                    # Read task times from file
-                    with open(filename, "r") as file:
-                        for line in file:
-                            task_times.append(int(line.strip()))
-                time.sleep(3)
-
-                task_times.sort()
-
-                with open(f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/sorted_times.txt", "w") as file:
-                    for timex in task_times:
-                        file.write(f"{timex}\n")
-
-                for j in range(len(task_times)-1):
-                    switch_times.append(
-                        task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
-                    switch_times_global.append(
-                        task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
-
-                with open(f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/switch_times.txt", "w") as file:
-                    for timex in switch_times:
-                        file.write(f"{timex}\n")
-
-            mean_switch_time = statistics.mean(
-                switch_times_global) if switch_times_global else 0
-            stdev_switch_time = statistics.stdev(
-                switch_times_global) if len(switch_times_global) > 1 else 0
-            max_switch_time = max(
-                switch_times_global) if switch_times_global else 0
-            min_switch_time = min(
-                switch_times_global) if switch_times_global else 0
-
-            summary_file.write(
-                f"\t\t- Średni czas zmiany wątku: {mean_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Odchylenie standardowe czasu zmiany wątku: {stdev_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Maksymalny czas zmiany wątku: {max_switch_time}\n")
-            summary_file.write(
-                f"\t\t- Minimalny czas zmiany wątku: {min_switch_time}\n")
-
-            switch_times_global = []
-
-            # 5_5_50 part
-            summary_file.write(
-                "\t- test 5 wątków niski p. i 5 wysoki p. po 50 pomiarów:\n")
-            self.task_force_switch_priority_input.delete(0, ctk.END)
-            self.task_force_switch_priority_input.insert(0, "5; 5; 50")
-            for i in range(2):
-                task_times = []
-                switch_times = []
-                self.test_string = f"5_5_50_{i}"
-                if (self.task_force_switch_priority_command() != 0):
-                    return False
-                # System analyzed
-                for j in range(10):
-                    filename = f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/raw/{j}.txt"
-                    # Read task times from file
-                    with open(filename, "r") as file:
-                        for line in file:
-                            task_times.append(int(line.strip()))
-                time.sleep(3)
-
-                task_times.sort()
-
-                with open(f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/sorted_times.txt", "w") as file:
-                    for timex in task_times:
-                        file.write(f"{timex}\n")
-
-                for j in range(len(task_times)-1):
-                    switch_times.append(
-                        task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
-                    switch_times_global.append(
-                        task_times[j+1] - task_times[j] - TASK_SWITCH_TICKS)
-
-                with open(f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}/switch_times.txt", "w") as file:
-                    for timex in switch_times:
-                        file.write(f"{timex}\n")
 
             mean_switch_time = statistics.mean(
                 switch_times_global) if switch_times_global else 0
@@ -1318,7 +1022,7 @@ class App(ctk.CTk):
                             task_times[1][j+1] - task_times[1][j] - 2 * MEASSURE_TICKS)
                     else:
                         print(
-                            f"Error: 2 recieves / 2 sends in the row!")
+                            f"Error: 2 recieves / 2 sends in the row for {j}!")
                         switch_issues_detected = True
 
                 with open(f"./results/{self.system_string}/queue/{self.test_string}/queue_times_raw.txt", "w") as file:
@@ -1379,7 +1083,7 @@ class App(ctk.CTk):
             MEASSURE_TICKS = 46
             MEASSURE_TIME = float("{:.9f}".format(MEASSURE_TICKS / 72.000))
         else:
-            TASK_SWITCH_TICKS = 14
+            TASK_SWITCH_TICKS = 12
             TASK_SWITCH_TIME = float(
                 "{:.9f}".format(TASK_SWITCH_TICKS / 72.000))
             MEASSURE_TICKS = 6
@@ -1422,19 +1126,16 @@ class App(ctk.CTk):
         arg_count = 0
         args, arg_count = self.read_args(self.task_force_switch_input.get())
         result = code_command_frame(buffor_tx, command, arg_count, args)
-        print([hex(byte) for byte in buffor_tx])
-
+        print(f"Starting task force switch {self.test_string} test")
         if result == 0:
             self.ser.flush()
             self.ser.write(buffor_tx)
             # time.sleep(10)
             response = self.ser.read(406 * args[0])
-            print(len(response))
             if len(response) == 406 * args[0]:
                 scores = [response[i * 406: (i + 1) * 406]
                           for i in range(args[0])]
                 for i in range(args[0]):
-                    print([hex(byte) for byte in scores[i]])
                     with open(f"{fpath}/us/{i}.txt", "w") as file:
                         with open(f"{fpath}/raw/{i}.txt", "w") as file_raw:
                             command_anw = 0
@@ -1530,133 +1231,6 @@ class App(ctk.CTk):
             for interval in system_intervals[num_tasks+1:-(num_tasks+1)]:
                 time_file.write(f"{interval[1]:.3f}\n")
 
-    def task_force_switch_priority_command(self):
-        error = 0
-        self.blocked_state = True
-        self.change_state(True, False)
-        fpath = f"./results/{self.system_string}/task_force_switch_priority/{self.test_string}"
-        self.delete_old_measurements(fpath)
-
-        buffor_tx = bytearray(9)
-        command = 0x01
-        arg_count = 0
-        args, arg_count = self.read_args(
-            self.task_force_switch_priority_input.get())
-        result = code_command_frame(buffor_tx, command, arg_count, args)
-        print([hex(byte) for byte in buffor_tx])
-
-        if result == 0:
-            self.ser.flush()
-            self.ser.write(buffor_tx)
-            # time.sleep(10)
-            thread_count = (args[0]+args[1])
-            response = self.ser.read(406 * thread_count)
-            print(len(response))
-            if len(response) == 406 * thread_count:
-                scores = [response[i * 406: (i + 1) * 406]
-                          for i in range(thread_count)]
-                for i in range(thread_count):
-                    print([hex(byte) for byte in scores[i]])
-                    with open(f"{fpath}/us/{i}.txt", "w") as file:
-                        with open(f"{fpath}/raw/{i}.txt", "w") as file_raw:
-                            command_anw = 0
-                            arg_count_anw = 0
-                            args_anw = []
-                            result, command_anw, arg_count_anw = decode_command_frame(
-                                scores[i], args_anw)
-                            if result == 0 and command_anw == command:
-                                for j in range(0, arg_count_anw, 4):
-                                    value_bytes = args_anw[j:j+4]
-                                    uint_value = struct.unpack(
-                                        "<I", bytes(value_bytes))[0]
-                                    file_raw.write(f"{uint_value}\n")
-                                    # Convert uint32_t to float by dividing by 72
-                                    float_value = uint_value / 72.0
-                                    file.write(f"{float_value:.9f}\n")
-                                self.task_force_switch_priority_label.configure(
-                                    text="OK")
-                            else:
-                                self.change_state(False, True)
-                                self.task_force_switch_priority_label.configure(
-                                    text="Err")
-                                error = -1
-            else:
-                print("Board didn't send full responce to frame. Maybe resend?")
-                self.change_state(False, True)
-                self.task_force_switch_priority_label.configure(text="Err")
-                error = -1
-
-        self.blocked_state = False
-        self.change_state(True, True)
-        return error
-
-    def task_force_switch_priority_analyze(self):
-        args, arg_count = self.read_args(
-            self.task_force_switch_priority_input.get())
-        num_tasks = args[0] + args[1]
-
-        task_times = []
-        system_intervals = []
-        # System analyzed
-        for i in range(num_tasks):
-            filename = f"./res/task_force_switch_priority/{i}.txt"
-            # Read task times from file
-            with open(filename, "r") as file:
-                for line in file:
-                    task_times.append(float(line.strip()))
-
-        # Find system intervals
-        task_times.sort()
-        prev_time = 0
-        for time in task_times:
-            if time - prev_time > TASK_SWITCH_TIME:
-                system_intervals.append(
-                    (prev_time + TASK_SWITCH_TIME, time - prev_time-TASK_SWITCH_TIME))
-            prev_time = time
-
-        # Adjust figure size to reduce stretching on y-axis
-        # You can adjust the figure width as needed
-        plt.figure(figsize=(num_tasks, num_tasks))
-
-        # Loop through each file
-        for i in range(num_tasks):
-            filename = f"./res/task_force_switch_priority/{i}.txt"
-            task_times = []
-            if i < args[0]:
-                color = 'blue'
-            else:
-                color = 'green'
-            # color = random.choice(COLORS)
-
-            # Read task times from file
-            with open(filename, "r") as file:
-                for line in file:
-                    task_times.append(float(line.strip()))
-
-            # Plot each task as a straight line segment
-            for time_idx, task_time in enumerate(task_times):
-                plt.plot([task_time, task_time + TASK_SWITCH_TIME],
-                         [i, i], color=color)
-
-        for interval in system_intervals:
-            plt.plot([interval[0], interval[0] + interval[1]],
-                     [num_tasks, num_tasks], color='red', label='SYSTEM')
-
-        # Set task labels on the y-axis
-        plt.yticks(range(num_tasks), [f'Task {i}' for i in range(num_tasks)])
-
-        # Set labels and show plot
-        plt.xlabel('Time')
-        plt.ylabel('Task')
-        plt.title('Task Time Visualization')
-        plt.grid(True)  # Add grid for better readability
-        plt.tight_layout()  # Adjust layout to prevent overlapping labels
-        plt.show()
-
-        with open("times.txt", "w") as time_file:
-            for interval in system_intervals[num_tasks+1:-(num_tasks+1)]:
-                time_file.write(f"{interval[1]:.3f}\n")
-
     def task_switch_command(self):
         error = 0
         self.blocked_state = True
@@ -1665,23 +1239,21 @@ class App(ctk.CTk):
         self.delete_old_measurements(fpath)
 
         buffor_tx = bytearray(9)
-        command = 0x02
+        command = 0x01
         arg_count = 0
         args, arg_count = self.read_args(self.task_switch_input.get())
         result = code_command_frame(buffor_tx, command, arg_count, args)
-        print([hex(byte) for byte in buffor_tx])
+        print(f"Starting task switch {self.test_string} test")
 
         if result == 0:
             self.ser.flush()
             self.ser.write(buffor_tx)
             # time.sleep(10)
             response = self.ser.read(406 * args[0])
-            print(len(response))
             if len(response) == 406 * args[0]:
                 scores = [response[i * 406: (i + 1) * 406]
                           for i in range(args[0])]
                 for i in range(args[0]):
-                    print([hex(byte) for byte in scores[i]])
                     with open(f"{fpath}/us/{i}.txt", "w") as file:
                         with open(f"{fpath}/raw/{i}.txt", "w") as file_raw:
                             command_anw = 0
@@ -1778,101 +1350,6 @@ class App(ctk.CTk):
         #     for interval in system_intervals[num_tasks+1:-(num_tasks+1)]:
         #         time_file.write(f"{interval[1]:.3f}\n")
 
-    def task_switch_priority_command(self):
-        error = 0
-        self.blocked_state = True
-        self.change_state(True, False)
-        fpath = f"./results/{self.system_string}/task_switch_priority/{self.test_string}"
-        self.delete_old_measurements(fpath)
-
-        buffor_tx = bytearray(9)
-        command = 0x03
-        arg_count = 0
-        args, arg_count = self.read_args(self.task_switch_priority_input.get())
-        result = code_command_frame(buffor_tx, command, arg_count, args)
-        print([hex(byte) for byte in buffor_tx])
-
-        if result == 0:
-            self.ser.flush()
-            self.ser.write(buffor_tx)
-            # time.sleep(10)
-            thread_count = (args[0]+args[1])
-            response = self.ser.read(406 * thread_count)
-            print(len(response))
-            if len(response) == 406 * thread_count:
-                scores = [response[i * 406: (i + 1) * 406]
-                          for i in range(thread_count)]
-                for i in range(thread_count):
-                    print([hex(byte) for byte in scores[i]])
-                    with open(f"{fpath}/us/{i}.txt", "w") as file:
-                        with open(f"{fpath}/raw/{i}.txt", "w") as file_raw:
-                            command_anw = 0
-                            arg_count_anw = 0
-                            args_anw = []
-                            result, command_anw, arg_count_anw = decode_command_frame(
-                                scores[i], args_anw)
-                            if result == 0 and command_anw == command:
-                                for j in range(0, arg_count_anw, 4):
-                                    value_bytes = args_anw[j:j+4]
-                                    uint_value = struct.unpack(
-                                        "<I", bytes(value_bytes))[0]
-                                    file_raw.write(f"{uint_value}\n")
-                                    # Convert uint32_t to float by dividing by 72
-                                    float_value = uint_value / 72.0
-                                    file.write(f"{float_value:.9f}\n")
-                                self.task_switch_priority_label.configure(
-                                    text="OK")
-                            else:
-                                self.change_state(False, True)
-                                self.task_switch_priority_label.configure(
-                                    text="Err")
-                                error = -1
-            else:
-                print("Board didn't send full responce to frame. Maybe resend?")
-                self.change_state(False, True)
-                self.task_switch_priority_label.configure(text="Err")
-                error = -1
-
-        self.blocked_state = False
-        self.change_state(True, True)
-        return error
-
-    def task_switch_priority_analyze(self):
-        args, arg_count = self.read_args(self.task_switch_priority_input.get())
-        num_tasks = args[0] + args[1]
-
-        plt.figure(figsize=(num_tasks, num_tasks))
-
-        fpath = f"./results/{self.system_string}/task_switch_priority/{self.test_string}"
-        # Loop through each file
-        for i in range(num_tasks):
-            filename = f"{fpath}/raw/{i}.txt"
-            task_times = []
-            # color = random.choice(COLORS)
-
-            # Read task times from file
-            with open(filename, "r") as file:
-                lines = file.readlines()
-                # Iterate over the lines two at a time
-                for j in range(len(lines)):
-                    task_times.append(int(lines[j].strip()))
-
-            # Plot each task as a straight line segment
-            for time_slot in task_times:
-                plt.plot([time_slot-1000, time_slot+1000],
-                         [i, i], color='blue')
-
-        # Set task labels on the y-axis
-        plt.yticks(range(num_tasks), [f'Task {i}' for i in range(num_tasks)])
-
-        # Set labels and show plot
-        plt.xlabel('Time')
-        plt.ylabel('Task')
-        plt.title('Task Time Visualization')
-        plt.grid(True)  # Add grid for better readability
-        plt.tight_layout()  # Adjust layout to prevent overlapping labels
-        plt.show()
-
     def semaphore_command(self):
         error = 0
         self.blocked_state = True
@@ -1881,23 +1358,21 @@ class App(ctk.CTk):
         self.delete_old_measurements(fpath)
 
         buffor_tx = bytearray(9)
-        command = 0x04
+        command = 0x02
         arg_count = 0
         args, arg_count = self.read_args(self.semaphore_input.get())
         result = code_command_frame(buffor_tx, command, arg_count, args)
-        print([hex(byte) for byte in buffor_tx])
+        print(f"Starting semaphore {self.test_string} test")
 
         if result == 0:
             self.ser.flush()
             self.ser.write(buffor_tx)
             # time.sleep(10)
             response = self.ser.read(406 * args[0])
-            print(len(response))
             if len(response) == 406 * args[0]:
                 scores = [response[i * 406: (i + 1) * 406]
                           for i in range(args[0])]
                 for i in range(args[0]):
-                    print([hex(byte) for byte in scores[i]])
                     with open(f"{fpath}/us/{i}.txt", "w") as file:
                         with open(f"{fpath}/raw/{i}.txt", "w") as file_raw:
                             command_anw = 0
@@ -1997,22 +1472,19 @@ class App(ctk.CTk):
         self.delete_old_measurements(fpath)
 
         buffor_tx = bytearray(9)
-        command = 0x05
+        command = 0x03
         arg_count = 0
         args, arg_count = self.read_args(self.queue_input.get())
         result = code_command_frame(buffor_tx, command, arg_count, args)
-        print([hex(byte) for byte in buffor_tx])
-
+        print(f"Starting queue {self.test_string} test")
         if result == 0:
             self.ser.flush()
             self.ser.write(buffor_tx)
             # time.sleep(10)
             response = self.ser.read(406 * 4)
-            print(len(response))
             if len(response) == 406 * 4:
                 scores = [response[i * 406: (i + 1) * 406] for i in range(4)]
                 for i in range(2):
-                    print([hex(byte) for byte in scores[i]])
                     with open(f"{fpath}/us/{i}.txt", "w") as file:
                         with open(f"{fpath}/raw/{i}.txt", "w") as file_raw:
                             command_anw = 0
@@ -2036,7 +1508,6 @@ class App(ctk.CTk):
                                 error = -1
                 with open(f"{fpath}/errors.txt", "w") as file:
                     for i in range(2, 4):
-                        print([hex(byte) for byte in scores[i]])
                         command_anw = 0
                         arg_count_anw = 0
                         args_anw = []
