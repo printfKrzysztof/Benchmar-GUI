@@ -43,40 +43,6 @@ match args.test:
         plt.tight_layout()  # Adjust layout to prevent overlapping labels
         plt.show()
 
-    case "task-switch-priority":
-
-        num_tasks = 10
-        plt.figure(figsize=(num_tasks, num_tasks))
-        # Loop through each file
-        for i in range(num_tasks):
-            filename = f"./results/{args.system}/task_switch_priority/5_5_6_0/us/{i}.txt"
-            task_times = []
-            # Read task times from file
-            with open(filename, "r") as file:
-                lines = file.readlines()
-                # Iterate over the lines two at a time
-                for j in range(0, len(lines), 2):
-                    # Ensure there are at least two lines to read
-                    if j + 1 < len(lines):
-                        # Append the tuple of two float values to the task_times list
-                        task_times.append(
-                            (float(lines[j].strip()), float(lines[j + 1].strip())))
-
-            # Plot each task as a straight line segment
-            for time_start, time_end in task_times:
-                plt.plot([time_start, time_end], [i, i], color='blue')
-
-        # Set task labels on the y-axis
-        plt.yticks(range(num_tasks), [f'Task {i}' for i in range(num_tasks)])
-
-        # Set labels and show plot
-        plt.xlabel('Time')
-        plt.ylabel('Task')
-        plt.title('Task Time Visualization')
-        plt.grid(True)  # Add grid for better readability
-        plt.tight_layout()  # Adjust layout to prevent overlapping labels
-        plt.show()
-
     case "task-force-switch":
         num_tasks = 5
         plt.figure(figsize=(num_tasks, num_tasks))
@@ -112,6 +78,71 @@ match args.test:
         plt.show()
 
     case "semaphore":
+        num_tasks = 5
+        plt.figure(figsize=(num_tasks, num_tasks))
+
+        # Loop through each file
+        for i in range(num_tasks):
+            filename = f"./results/{args.system}/semaphore/5_10_0/us/{i}.txt"
+            task_times = []
+            # Read task times from file
+            with open(filename, "r") as file:
+                lines = file.readlines()
+                # Iterate over the lines two at a time
+                for j in range(0, len(lines)):
+                    task_times.append((float(lines[j].strip())))
+
+            # Plot each task as a straight line segment
+            if args.system == "Zephyr":
+                time_to_add = 8
+            else:
+                time_to_add = 3
+            for timex in task_times:
+                plt.plot([timex, timex+time_to_add], [i, i], color='blue')
+
+        # Set task labels on the y-axis
+        plt.yticks(range(num_tasks), [f'Task {i}' for i in range(num_tasks)])
+
+        # Set labels and show plot
+        plt.xlabel('Time')
+        plt.ylabel('Task')
+        plt.title('Task Time Visualization')
+        plt.grid(True)  # Add grid for better readability
+        plt.tight_layout()  # Adjust layout to prevent overlapping labels
+        plt.show()
+
         pass
     case "queue":
+        num_tasks = 2
+        plt.figure(figsize=(num_tasks, num_tasks))
+
+        # Loop through each file
+        for i in range(num_tasks):
+            filename = f"./results/{args.system}/queue/50_0/us/{i}.txt"
+            task_times = []
+            # Read task times from file
+            with open(filename, "r") as file:
+                lines = file.readlines()
+                # Iterate over the lines two at a time
+                for j in range(0, len(lines)):
+                    task_times.append((float(lines[j].strip())))
+
+            # Plot each task as a straight line segment
+            if args.system == "Zephyr":
+                time_to_add = 8
+            else:
+                time_to_add = 3
+            for timex in task_times:
+                plt.plot([timex, timex+time_to_add], [i, i], color='blue')
+
+        # Set task labels on the y-axis
+        plt.yticks(range(num_tasks), ["Reciver", "Transmitter"])
+
+        # Set labels and show plot
+        plt.xlabel('Time')
+        plt.ylabel('Task')
+        plt.title('Task Time Visualization')
+        plt.grid(True)  # Add grid for better readability
+        # plt.tight_layout()  # Adjust layout to prevent overlapping labels
+        plt.show()
         pass

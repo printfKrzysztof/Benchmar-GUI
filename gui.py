@@ -800,17 +800,55 @@ class App(ctk.CTk):
                     for timex in task_times:
                         file.write(f"{timex}\n")
                 # Create a deque to store the last 5 elements
+                duplicate_ranges = []
+                current_range_start = None
+                current_range_end = None
+                duplicate_count = 0
                 last_queue = deque(maxlen=5)
-                for j in range(len(task_times)-1):
+                for j in range(len(task_times) - 1):
                     if j + 1 <= len(task_times):
                         switch_times.append(
-                            task_times[j+1] - task_times[j] - MEASSURE_TICKS)
+                            task_times[j + 1] - task_times[j] - MEASSURE_TICKS)
                         last_queue.append(thread_ids[j])
+
                         if len(last_queue) == 5:
-                            if len(last_queue) != len(set(last_queue)):  # Check for duplicates
-                                print(
-                                    f"Duplicate found in the last 5 elements: {len(last_queue)-len(set(last_queue))} values are the same in run {j}")
-                                switch_issues_detected = True
+                            # Current duplicates count
+                            current_duplicates = len(
+                                last_queue) - len(set(last_queue))
+
+                            # If there are duplicates, check if it's a new range or continuation of the same range
+                            if current_duplicates > 0:
+                                if current_range_start is None:  # Start a new range
+                                    current_range_start = j  # The range starts 4 steps earlier
+                                    duplicate_count = current_duplicates
+                                elif current_duplicates != duplicate_count:  # Detect switch in duplicate_count
+                                    # Finalize previous range before starting new one
+                                    duplicate_ranges.append(
+                                        (current_range_start, current_range_end, duplicate_count))
+                                    current_range_start = j  # Start a new range
+                                    duplicate_count = current_duplicates
+
+                                current_range_end = j  # Update the range end
+                            else:
+                                # If no duplicates detected, finalize the previous range
+                                if current_range_start is not None:
+                                    duplicate_ranges.append(
+                                        (current_range_start, current_range_end, duplicate_count))
+                                    current_range_start = None  # Reset the range
+                                    current_range_end = None
+                                    duplicate_count = 0
+
+                # After loop, check if there was an active range that hasn't been added
+                if current_range_start is not None:
+                    duplicate_ranges.append(
+                        (current_range_start, current_range_end, duplicate_count))
+
+                # Print the results
+                for start, end, count in duplicate_ranges:
+                    if start == end:
+                        print(f"- Run {start} had {count} duplicates.")
+                    else:
+                        print(f"- Runs {start}-{end} had {count} duplicates.")
 
                 with open(f"./results/{self.system_string}/semaphore/{self.test_string}/semaphore_times_raw.txt", "w") as file:
                     for timex in switch_times:
@@ -872,6 +910,11 @@ class App(ctk.CTk):
                     for timex in task_times:
                         file.write(f"{timex}\n")
 
+                duplicate_ranges = []
+                current_range_start = None
+                current_range_end = None
+                duplicate_count = 0
+
                 last_queue = deque(maxlen=10)
                 for j in range(len(task_times)-1):
                     if j + 1 <= len(task_times):
@@ -879,10 +922,43 @@ class App(ctk.CTk):
                             task_times[j+1] - task_times[j] - MEASSURE_TICKS)
                         last_queue.append(thread_ids[j])
                         if len(last_queue) == 10:
-                            if len(last_queue) != len(set(last_queue)):  # Check for duplicates
-                                print(
-                                    f"Duplicate found in the last 10 elements: {len(last_queue)-len(set(last_queue))} values are the same in run {j}")
-                                switch_issues_detected = True
+                            # Current duplicates count
+                            current_duplicates = len(
+                                last_queue) - len(set(last_queue))
+
+                            # If there are duplicates, check if it's a new range or continuation of the same range
+                            if current_duplicates > 0:
+                                if current_range_start is None:  # Start a new range
+                                    current_range_start = j  # The range starts 4 steps earlier
+                                    duplicate_count = current_duplicates
+                                elif current_duplicates != duplicate_count:  # Detect switch in duplicate_count
+                                    # Finalize previous range before starting new one
+                                    duplicate_ranges.append(
+                                        (current_range_start, current_range_end, duplicate_count))
+                                    current_range_start = j  # Start a new range
+                                    duplicate_count = current_duplicates
+
+                                current_range_end = j  # Update the range end
+                            else:
+                                # If no duplicates detected, finalize the previous range
+                                if current_range_start is not None:
+                                    duplicate_ranges.append(
+                                        (current_range_start, current_range_end, duplicate_count))
+                                    current_range_start = None  # Reset the range
+                                    current_range_end = None
+                                    duplicate_count = 0
+
+                # After loop, check if there was an active range that hasn't been added
+                if current_range_start is not None:
+                    duplicate_ranges.append(
+                        (current_range_start, current_range_end, duplicate_count))
+
+                # Print the results
+                for start, end, count in duplicate_ranges:
+                    if start == end:
+                        print(f"- Run {start} had {count} duplicates.")
+                    else:
+                        print(f"- Runs {start}-{end} had {count} duplicates.")
 
                 with open(f"./results/{self.system_string}/semaphore/{self.test_string}/semaphore_times_raw.txt", "w") as file:
                     for timex in switch_times:
@@ -944,6 +1020,10 @@ class App(ctk.CTk):
                     for timex in task_times:
                         file.write(f"{timex}\n")
 
+                duplicate_ranges = []
+                current_range_start = None
+                current_range_end = None
+                duplicate_count = 0
                 last_queue = deque(maxlen=20)
                 for j in range(len(task_times)-1):
                     if j + 1 <= len(task_times):
@@ -951,10 +1031,43 @@ class App(ctk.CTk):
                             task_times[j+1] - task_times[j] - MEASSURE_TICKS)
                         last_queue.append(thread_ids[j])
                         if len(last_queue) == 20:
-                            if len(last_queue) != len(set(last_queue)):  # Check for duplicates
-                                print(
-                                    f"Duplicate found in the last 20 elements: {len(last_queue)-len(set(last_queue))} values are the same in run {j}")
-                                switch_issues_detected = True
+                            # Current duplicates count
+                            current_duplicates = len(
+                                last_queue) - len(set(last_queue))
+
+                            # If there are duplicates, check if it's a new range or continuation of the same range
+                            if current_duplicates > 0:
+                                if current_range_start is None:  # Start a new range
+                                    current_range_start = j  # The range starts 4 steps earlier
+                                    duplicate_count = current_duplicates
+                                elif current_duplicates != duplicate_count:  # Detect switch in duplicate_count
+                                    # Finalize previous range before starting new one
+                                    duplicate_ranges.append(
+                                        (current_range_start, current_range_end, duplicate_count))
+                                    current_range_start = j  # Start a new range
+                                    duplicate_count = current_duplicates
+
+                                current_range_end = j  # Update the range end
+                            else:
+                                # If no duplicates detected, finalize the previous range
+                                if current_range_start is not None:
+                                    duplicate_ranges.append(
+                                        (current_range_start, current_range_end, duplicate_count))
+                                    current_range_start = None  # Reset the range
+                                    current_range_end = None
+                                    duplicate_count = 0
+
+                # After loop, check if there was an active range that hasn't been added
+                if current_range_start is not None:
+                    duplicate_ranges.append(
+                        (current_range_start, current_range_end, duplicate_count))
+
+                # Print the results
+                for start, end, count in duplicate_ranges:
+                    if start == end:
+                        print(f"- Run {start} had {count} duplicates.")
+                    else:
+                        print(f"- Runs {start}-{end} had {count} duplicates.")
 
                 with open(f"./results/{self.system_string}/semaphore/{self.test_string}/semaphore_times_raw.txt", "w") as file:
                     for timex in switch_times:
