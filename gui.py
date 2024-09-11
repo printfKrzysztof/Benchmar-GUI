@@ -246,7 +246,7 @@ class App(ctk.CTk):
             summary_file.write("\t- test 5 wątków po 5 pomiarów:\n")
             self.task_switch_input.delete(0, ctk.END)
             self.task_switch_input.insert(0, "5; 10")
-            for i in range(2):
+            for i in range(10):
                 task_times = []
                 switch_times = []
                 in_task_times = []
@@ -352,7 +352,7 @@ class App(ctk.CTk):
             self.task_switch_input.delete(0, ctk.END)
             self.task_switch_input.insert(0, "10; 10")
             summary_file.write("\t- test 10 wątków po 5 pomiarów:\n")
-            for i in range(2):
+            for i in range(10):
                 task_times = []
                 switch_times = []
                 in_task_times = []
@@ -567,7 +567,7 @@ class App(ctk.CTk):
                 "\t- test 5 wątków po 50 pomiarów:\n")
             self.task_force_switch_input.delete(0, ctk.END)
             self.task_force_switch_input.insert(0, "5; 50")
-            for i in range(2):
+            for i in range(10):
                 task_times = []
                 switch_times = []
                 self.test_string = f"5_50_{i}"
@@ -635,7 +635,7 @@ class App(ctk.CTk):
                 "\t- test 10 wątków po 50 pomiarów:\n")
             self.task_force_switch_input.delete(0, ctk.END)
             self.task_force_switch_input.insert(0, "10; 50")
-            for i in range(2):
+            for i in range(10):
                 task_times = []
                 switch_times = []
                 self.test_string = f"10_50_{i}"
@@ -776,7 +776,7 @@ class App(ctk.CTk):
                 "\t- test 5 wątków po 10 pomiarów:\n")
             self.semaphore_input.delete(0, ctk.END)
             self.semaphore_input.insert(0, "5; 10")
-            for i in range(2):
+            for i in range(10):
                 task_times = []
                 switch_times = []
                 self.test_string = f"5_10_{i}"
@@ -886,7 +886,7 @@ class App(ctk.CTk):
                 "\t- test 10 wątków po 10 pomiarów:\n")
             self.semaphore_input.delete(0, ctk.END)
             self.semaphore_input.insert(0, "10; 10")
-            for i in range(2):
+            for i in range(10):
                 task_times = []
                 switch_times = []
                 self.test_string = f"10_10_{i}"
